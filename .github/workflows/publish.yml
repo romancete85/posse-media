@@ -32,7 +32,7 @@ jobs:
           python-version: "3.11"
 
       - name: Instalar
-        run: pip install -e ".[dev]"
+        run: pip install .
 
       # Credenciales AWS desde GitHub Secrets (access key). SSM guarda los tokens de LinkedIn.
       - name: Configurar AWS

@@ -45,19 +45,28 @@ def refresh() -> None:
 @app.command()
 def validate(pieza: str) -> None:
     """Valida el schema de una pieza YAML."""
-    raise NotImplementedError("TODO(Fase 1): content_store.validate")
+    from posse import content_store
+
+    content_store.validate(pieza)
+    typer.echo(f"OK: {pieza} valida el schema.")
 
 
 @app.command()
 def preview(pieza: str) -> None:
     """Muestra exactamente que se publicaria. No publica nada."""
-    raise NotImplementedError("TODO(Fase 1): print(preview.render(pieza))")
+    from posse import preview as preview_mod
+
+    typer.echo(preview_mod.render(pieza))
 
 
 @app.command()
 def publish(pieza: str) -> None:
     """Publica una pieza approved (idempotente)."""
-    raise NotImplementedError("TODO(Fase 1): publisher.publish(pieza)")
+    from posse import logging_conf, publisher
+
+    logging_conf.setup()
+    publisher.publish(pieza)
+    typer.echo(f"OK: publish de {pieza} finalizado.")
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ jobs:
           python-version: "3.11"
 
       - name: Instalar
-        run: pip install -e ".[dev]"
+        run: pip install .
 
       - name: Configurar AWS
         uses: aws-actions/configure-aws-credentials@v4

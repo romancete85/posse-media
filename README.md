@@ -63,9 +63,14 @@ publicado:
 ### 2. Entorno local
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+pip install ".[dev]"         # instala el paquete + deps de test. Tras editar codigo, reinstalar.
 cp .env.example .env         # completar client_id/secret, región AWS, path del parámetro SSM
 ```
+
+> **Nota (dev):** se usa install no-editable a propósito — algunos entornos macOS/Homebrew no
+> honran los `.pth` del editable install (`pip install -e`), y el comando `posse` no encuentra el
+> paquete. Los tests corren contra `src/` igual (pytest `pythonpath`). Para iterar sin reinstalar:
+> `PYTHONPATH=src python -m posse ...`.
 
 ### 3. Autenticación (una sola vez)
 ```bash
