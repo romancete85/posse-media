@@ -1,31 +1,36 @@
-# Publica una pieza cuando se aprueba (gate humano).
-# SCAFFOLD: estructura definida; los pasos que invocan `posse` se activan en Fase 1.
+# Publica cuando se aprueba (gate humano) y commitea el estado 'published' de vuelta.
 name: publish
 
 on:
-  # Gate: poner el label 'approved' al PR dispara la publicacion.
   pull_request:
-    types: [labeled]
-  # Fallback manual.
+    types: [labeled]   # gate: poner el label 'approved' al PR
   workflow_dispatch:
     inputs:
       pieza:
-        description: "Ruta de la pieza YAML a publicar (ej. content/2026-07-21-mi-post.yaml)"
+        description: "Ruta de la pieza a publicar (ej. content/2026-07-21-mi-post.yaml)"
         required: true
 
 permissions:
-  contents: write        # para commitear el estado 'published' de vuelta
-  pull-requests: write   # para postear el preview como comentario
+  contents: write        # commitear el estado 'published' de vuelta
+  pull-requests: write   # postear el preview como comentario
 
 jobs:
   publish:
-    # Solo corre si el trigger es el label 'approved' (o el dispatch manual).
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' && github.event.label.name == 'approved')
     runs-on: ubuntu-latest
+    env:
+      LINKEDIN_CLIENT_ID: ${{ secrets.LINKEDIN_CLIENT_ID }}
+      LINKEDIN_CLIENT_SECRET: ${{ secrets.LINKEDIN_CLIENT_SECRET }}
+      LINKEDIN_VERSION: ${{ vars.LINKEDIN_VERSION }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      SSM_TOKEN_PARAM: ${{ vars.SSM_TOKEN_PARAM }}
+      TOKEN_STORE_BACKEND: ssm
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}   # la rama del PR, para poder commitear
 
       - uses: actions/setup-python@v5
         with:
@@ -34,30 +39,35 @@ jobs:
       - name: Instalar
         run: pip install .
 
-      # Credenciales AWS desde GitHub Secrets (access key). SSM guarda los tokens de LinkedIn.
       - name: Configurar AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
-        # TODO(Fase 1): descomentar cuando el token store SSM este implementado.
 
-      # TODO(Fase 1): resolver la pieza (input manual o el YAML cambiado en el PR).
-      # - name: Preview en el PR
-      #   run: posse preview "$PIEZA"   # + postear como comentario
-      # - name: Publicar (idempotente)
-      #   run: posse publish "$PIEZA"
-      # - name: Commit del estado published
-      #   run: |
-      #     git config user.name  "posse-bot"
-      #     git config user.email "posse-bot@users.noreply.github.com"
-      #     git add content/ && git commit -m "chore(publish): $PIEZA -> published" && git push
-      - name: Placeholder (scaffold)
-        run: echo "SCAFFOLD — pasos de publish pendientes (ROADMAP Fase 1)."
-    env:
-      LINKEDIN_CLIENT_ID: ${{ secrets.LINKEDIN_CLIENT_ID }}
-      LINKEDIN_CLIENT_SECRET: ${{ secrets.LINKEDIN_CLIENT_SECRET }}
-      LINKEDIN_VERSION: ${{ vars.LINKEDIN_VERSION }}
-      SSM_TOKEN_PARAM: ${{ vars.SSM_TOKEN_PARAM }}
-      TOKEN_STORE_BACKEND: ssm
+      - name: Preview (dispatch manual) en el log
+        if: github.event_name == 'workflow_dispatch'
+        run: posse preview "${{ github.event.inputs.pieza }}"
+
+      - name: Publicar
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            posse publish "${{ github.event.inputs.pieza }}"
+          else
+            posse publish-approved
+          fi
+
+      - name: Commit del estado published
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- content/; then
+            echo "sin cambios en content/ (nada nuevo publicado)"
+          else
+            git config user.name  "posse-bot"
+            git config user.email "posse-bot@users.noreply.github.com"
+            git add content/
+            git commit -m "chore(publish): actualizar estado published [skip ci]"
+            git push origin HEAD:${{ github.head_ref || github.ref_name }}
+          fi

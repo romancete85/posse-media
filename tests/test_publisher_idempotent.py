@@ -80,3 +80,16 @@ def test_draft_no_publica_gate(tmp_path):
     d.write_text(APPROVED_YAML.replace("estado: approved", "estado: draft"), encoding="utf-8")
     with pytest.raises(publisher.GateError):
         publisher.publish(d, settings=SETTINGS, store=FakeStore(FRESH), client=_client([]))
+
+
+def test_publish_approved_solo_toma_approved(tmp_path):
+    (tmp_path / "a.yaml").write_text(APPROVED_YAML, encoding="utf-8")
+    (tmp_path / "b.yaml").write_text(
+        APPROVED_YAML.replace("estado: approved", "estado: draft").replace("2026-07-22-x", "2026-07-22-y"),
+        encoding="utf-8",
+    )
+    settings = Settings(_env_file=None, linkedin_version="202506", content_dir=str(tmp_path))
+    calls = []
+    ids = publisher.publish_approved(settings=settings, store=FakeStore(FRESH), client=_client(calls))
+    assert ids == ["2026-07-22-x"]  # la draft se saltea
+    assert len(calls) == 1

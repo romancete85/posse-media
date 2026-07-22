@@ -25,7 +25,7 @@ Este doc ordena las fases de ingeniería; la redacción de contenido queda fuera
 
 ### Fase 1 — Publicar en LinkedIn (perfil propio)
 
-**Progreso:** módulos 1–5 ✅ (models, content_store, auth, platforms/linkedin, publisher/preview, cli — **31 tests, todo mockeado**). Faltan **6** (workflows reales) y **7** (README final + primera publicación de prueba con la app real).
+**Progreso:** módulos 1–6 ✅ (models, content_store, auth, platforms/linkedin, publisher/preview, cli, workflows — **32 tests, todo mockeado**). Falta **7**: validación real end-to-end (crear la app de LinkedIn, `posse auth`, configurar SSM + GitHub Secrets/Variables, primera publicación de prueba) y README final. Ver setup en `README.md`.
 
 Implementación módulo por módulo, cada uno con tests:
 1. **`models` + `content_store`** — schema tipado de la pieza + load/validate/reescritura in-place del YAML.

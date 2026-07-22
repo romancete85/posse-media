@@ -69,5 +69,15 @@ def publish(pieza: str) -> None:
     typer.echo(f"OK: publish de {pieza} finalizado.")
 
 
+@app.command("publish-approved")
+def publish_approved() -> None:
+    """Publica todas las piezas 'approved' del content_dir (lo usa el workflow del label)."""
+    from posse import logging_conf, publisher
+
+    logging_conf.setup()
+    ids = publisher.publish_approved()
+    typer.echo(f"OK: publicadas {len(ids)} pieza(s): {', '.join(ids) or '(ninguna)'}")
+
+
 if __name__ == "__main__":
     app()

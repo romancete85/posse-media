@@ -90,3 +90,24 @@ def publish(
             path, destino, fecha=result.fecha, url=result.url, post_id=result.post_id
         )
         log.info("publicado '%s' en %s: %s", pieza.id, destino, result.post_id)
+
+
+def publish_approved(
+    *,
+    settings: Settings | None = None,
+    store: TokenStore | None = None,
+    client=None,
+    clock: Callable[[], dt.datetime] | None = None,
+) -> list[str]:
+    """Publica todas las piezas 'approved' del content_dir. Devuelve los ids publicados.
+
+    Es lo que corre el workflow cuando se pone el label 'approved'. Las 'draft' se saltan;
+    las ya 'published' no se tocan (idempotencia).
+    """
+    settings = settings or get_settings()
+    ids: list[str] = []
+    for path in sorted(Path(settings.content_dir).glob("*.yaml")):
+        if content_store.load(path).estado is Estado.APPROVED:
+            publish(path, settings=settings, store=store, client=client, clock=clock)
+            ids.append(content_store.load(path).id)
+    return ids
