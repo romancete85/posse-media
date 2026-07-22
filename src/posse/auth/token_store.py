@@ -18,12 +18,16 @@ from posse.config import Settings, get_settings
 
 
 class TokenBundle(BaseModel):
-    """Tokens + metadata de expiracion + person URN. Lo que se persiste."""
+    """Tokens + metadata de expiracion + person URN. Lo que se persiste.
+
+    refresh_token/refresh_expires_at son opcionales: LinkedIn NO emite refresh tokens por
+    defecto (solo apps con 'programmatic refresh tokens'). Sin refresh, se re-corre `posse auth`.
+    """
 
     access_token: str
-    refresh_token: str
+    refresh_token: str | None = None
     access_expires_at: str  # ISO8601 UTC
-    refresh_expires_at: str  # ISO8601 UTC
+    refresh_expires_at: str | None = None  # ISO8601 UTC (None si la app no emite refresh)
     person_urn: str  # urn:li:person:<sub>
     scope: str | None = None
     token_type: str = "Bearer"

@@ -106,15 +106,18 @@ def bundle_from_token_response(
     """Convierte el payload de LinkedIn en un TokenBundle con expiraciones absolutas."""
     now = now or dt.datetime.now(dt.timezone.utc)
     access_expires = now + dt.timedelta(seconds=int(payload["expires_in"]))
-    refresh_expires = now + dt.timedelta(seconds=int(payload.get("refresh_token_expires_in", 0)))
+    # LinkedIn puede NO devolver refresh_token (lo normal salvo apps con programmatic refresh).
     refresh_token = payload.get("refresh_token") or refresh_token_fallback
-    if not refresh_token:
-        raise ValueError("no hay refresh_token en la respuesta ni fallback")
+    refresh_expires_at: str | None = None
+    if payload.get("refresh_token") and payload.get("refresh_token_expires_in"):
+        refresh_expires_at = (
+            now + dt.timedelta(seconds=int(payload["refresh_token_expires_in"]))
+        ).isoformat()
     return TokenBundle(
         access_token=payload["access_token"],
         refresh_token=refresh_token,
         access_expires_at=access_expires.isoformat(),
-        refresh_expires_at=refresh_expires.isoformat(),
+        refresh_expires_at=refresh_expires_at,
         person_urn=person_urn,
         scope=payload.get("scope"),
         token_type=payload.get("token_type", "Bearer"),
@@ -191,6 +194,11 @@ def run_authorization_code_flow(settings: Settings | None = None) -> TokenBundle
 def refresh(bundle: TokenBundle, settings: Settings | None = None) -> TokenBundle:
     """Refresca el access token de un bundle existente y devuelve el bundle actualizado."""
     settings = settings or get_settings()
+    if not bundle.refresh_token:
+        raise RuntimeError(
+            "esta app de LinkedIn no emitio refresh token; volve a correr `posse auth` "
+            "(o habilita 'programmatic refresh tokens' en la app)"
+        )
     payload = refresh_access_token(
         bundle.refresh_token,
         client_id=settings.linkedin_client_id,

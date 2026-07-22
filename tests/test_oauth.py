@@ -71,9 +71,20 @@ def test_bundle_calcula_expiraciones_y_conserva_refresh():
     assert bundle.access_expires_at == "2026-08-30T00:00:00+00:00"  # +60 dias
 
 
-def test_bundle_falla_sin_refresh_ni_fallback():
-    with pytest.raises(ValueError):
-        oauth.bundle_from_token_response({"access_token": "AT", "expires_in": 10}, person_urn="u")
+def test_bundle_sin_refresh_queda_none():
+    # LinkedIn no siempre devuelve refresh_token: el bundle queda con refresh None, sin fallar.
+    b = oauth.bundle_from_token_response({"access_token": "AT", "expires_in": 10}, person_urn="u")
+    assert b.refresh_token is None
+    assert b.refresh_expires_at is None
+
+
+def test_refresh_sin_refresh_token_falla():
+    from posse.auth.token_store import TokenBundle
+    from posse.config import Settings
+
+    b = TokenBundle(access_token="AT", access_expires_at="2099-01-01T00:00:00+00:00", person_urn="u")
+    with pytest.raises(RuntimeError):
+        oauth.refresh(b, settings=Settings(_env_file=None))  # falla antes de cualquier HTTP
 
 
 def test_raise_for_status_propaga_error_http():

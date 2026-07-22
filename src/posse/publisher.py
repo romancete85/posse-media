@@ -42,6 +42,13 @@ def _ensure_fresh(
     """Refresca el access token si esta vencido o por vencer, y persiste el nuevo bundle."""
     expira = dt.datetime.fromisoformat(bundle.access_expires_at)
     if clock() >= expira - _REFRESH_MARGIN:
+        if not bundle.refresh_token:
+            log.warning(
+                "access token por expirar (%s) y la app no emite refresh tokens; "
+                "corre `posse auth` de nuevo si el publish falla",
+                bundle.access_expires_at,
+            )
+            return bundle
         log.info("access token por expirar (%s); refrescando", bundle.access_expires_at)
         bundle = oauth.refresh(bundle, settings)
         store.save(bundle)

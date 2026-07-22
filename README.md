@@ -75,8 +75,12 @@ cp .env.example .env         # completar client_id/secret, región AWS, path del
 ### 3. Autenticación (una sola vez)
 ```bash
 posse auth        # abre el browser, captura el callback en localhost, obtiene tokens + person URN,
-                  # y los guarda en SSM Parameter Store (SecureString)
+                  # y los guarda en el token store (local en dev, SSM en prod)
 ```
+
+> **Refresh tokens:** LinkedIn **no emite refresh token por defecto** (solo apps con "programmatic
+> refresh tokens"). Sin refresh, el access token dura ~60 días y se **re-corre `posse auth`** al
+> expirar; el workflow `refresh-tokens` solo aplica si tu app sí emite refresh tokens.
 
 ### 4. Primera pieza de prueba
 ```bash
