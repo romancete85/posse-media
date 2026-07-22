@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     linkedin_client_id: str = ""
     linkedin_client_secret: str = ""
     linkedin_redirect_uri: str = "http://localhost:8765/callback"
-    linkedin_version: str = "202506"  # YYYYMM
+    linkedin_version: str = "202606"  # YYYYMM — mantener actual (LinkedIn rota ~12 meses)
 
     # OAuth local (flujo de una vez)
     oauth_callback_port: int = 8765
