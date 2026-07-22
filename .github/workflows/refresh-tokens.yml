@@ -1,0 +1,41 @@
+# Refresca el access token de LinkedIn antes de que expire (~60d) y lo reescribe en SSM.
+# SCAFFOLD: estructura definida; el paso `posse` se activa en Fase 1.
+name: refresh-tokens
+
+on:
+  schedule:
+    - cron: "0 6 */45 * *"   # cada ~45 dias (margen sobre los ~60d de expiracion del access token)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar
+        run: pip install -e ".[dev]"
+
+      - name: Configurar AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+        # TODO(Fase 1): descomentar cuando el token store SSM este implementado.
+
+      # TODO(Fase 1): posse auth refresh (lee refresh_token de SSM -> nuevo access -> guarda en SSM).
+      - name: Placeholder (scaffold)
+        run: echo "SCAFFOLD — refresh de token pendiente (ROADMAP Fase 1)."
+    env:
+      LINKEDIN_CLIENT_ID: ${{ secrets.LINKEDIN_CLIENT_ID }}
+      LINKEDIN_CLIENT_SECRET: ${{ secrets.LINKEDIN_CLIENT_SECRET }}
+      SSM_TOKEN_PARAM: ${{ vars.SSM_TOKEN_PARAM }}
+      TOKEN_STORE_BACKEND: ssm

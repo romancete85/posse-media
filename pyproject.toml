@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "posse-pipeline"
+version = "0.1.0"
+description = "Capa de ingenieria de un pipeline de contenido POSSE (fuente de verdad versionada -> LinkedIn)"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2",           # schema tipado de la pieza
+    "pydantic-settings>=2",  # settings/.env tipados
+    "ruamel.yaml>=0.18",     # reescritura del YAML preservando comentarios
+    "httpx>=0.27",           # cliente HTTP (timeouts, mockeable)
+    "typer>=0.12",           # CLI tipado
+    "boto3>=1.34",           # AWS SSM Parameter Store
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-httpx>=0.30",    # mock de httpx (nunca pegarle a la API real)
+    "ruff>=0.6",
+]
+
+[project.scripts]
+posse = "posse.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"

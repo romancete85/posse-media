@@ -1,0 +1,13 @@
+# Pieza de ejemplo — muestra el schema. Copiar y adaptar para una pieza real.
+id: 2026-07-21-ejemplo
+pilar: A                      # A=cloud/devops · B=mentoria · C=musica
+estado: draft                 # draft | approved | published  (el gate: solo 'approved' se publica)
+destinos: [linkedin]
+titulo: Título de ejemplo
+cuerpo: |
+  Este es el cuerpo del post. Texto plano, multilínea.
+  La redacción se hace en otro lado; acá entra ya escrito.
+assets: []                    # Fase 1: sin uso (rutas a imágenes/video en el futuro)
+hashtags: []
+publicado:
+  linkedin: { fecha: null, url: null, post_id: null }
