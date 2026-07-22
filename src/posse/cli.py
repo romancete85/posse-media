@@ -19,7 +19,27 @@ app = typer.Typer(help="posse-pipeline — publicar contenido versionado en Link
 @app.command()
 def auth() -> None:
     """Ejecuta el flujo OAuth (una vez) y persiste los tokens."""
-    raise NotImplementedError("TODO(Fase 1): auth.oauth.run_authorization_code_flow -> token_store.save")
+    from posse.auth import oauth
+    from posse.auth.token_store import get_token_store
+
+    bundle = oauth.run_authorization_code_flow()
+    get_token_store().save(bundle)
+    typer.echo(f"OK. person_urn={bundle.person_urn} | access expira: {bundle.access_expires_at}")
+
+
+@app.command()
+def refresh() -> None:
+    """Refresca el access token guardado (lo usa el workflow programado)."""
+    from posse.auth import oauth
+    from posse.auth.token_store import get_token_store
+
+    store = get_token_store()
+    bundle = store.load()
+    if bundle is None:
+        raise RuntimeError("no hay tokens guardados; corre `posse auth` primero")
+    nuevo = oauth.refresh(bundle)
+    store.save(nuevo)
+    typer.echo(f"OK. access renovado, expira: {nuevo.access_expires_at}")
 
 
 @app.command()

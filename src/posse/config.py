@@ -1,29 +1,37 @@
-"""Settings tipados desde .env / entorno (pydantic-settings).
-
-SCAFFOLD: contrato definido, sin logica funcional. Ver ROADMAP Fase 1.
-"""
+"""Settings tipados desde .env / entorno (pydantic-settings)."""
 
 from __future__ import annotations
 
-# TODO(Fase 1): from pydantic_settings import BaseSettings, SettingsConfigDict
+from functools import lru_cache
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings:  # TODO(Fase 1): heredar de BaseSettings
-    """Config del pipeline. Carga de .env / variables de entorno.
+class Settings(BaseSettings):
+    """Config del pipeline. Ver .env.example."""
 
-    Campos objetivo (ver .env.example):
-        linkedin_client_id / linkedin_client_secret / linkedin_redirect_uri
-        linkedin_version           (YYYYMM)
-        oauth_callback_port
-        aws_region / ssm_token_param
-        token_store_backend        ("ssm" | "local")
-        local_token_file
-        content_dir
-    """
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    # TODO(Fase 1): declarar los campos tipados + model_config(env_file=".env").
+    # LinkedIn app
+    linkedin_client_id: str = ""
+    linkedin_client_secret: str = ""
+    linkedin_redirect_uri: str = "http://localhost:8765/callback"
+    linkedin_version: str = "202506"  # YYYYMM
+
+    # OAuth local (flujo de una vez)
+    oauth_callback_port: int = 8765
+
+    # AWS / token store
+    aws_region: str = "us-east-1"
+    ssm_token_param: str = "/posse-pipeline/linkedin/tokens"
+    token_store_backend: str = "local"  # "ssm" (prod/CI) | "local" (dev)
+    local_token_file: str = "~/.config/posse-pipeline/tokens.json"
+
+    # Contenido
+    content_dir: str = "content"
 
 
-def get_settings() -> "Settings":
+@lru_cache
+def get_settings() -> Settings:
     """Devuelve las settings cargadas (cacheadas)."""
-    raise NotImplementedError("TODO(Fase 1): cargar Settings desde .env/entorno")
+    return Settings()
