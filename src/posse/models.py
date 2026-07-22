@@ -1,13 +1,13 @@
-"""Schema tipado de la pieza de contenido (fuente de verdad).
-
-SCAFFOLD: se define el contrato de datos (declarativo). Validadores/logica en Fase 1.
-"""
+"""Schema tipado de la pieza de contenido (fuente de verdad)."""
 
 from __future__ import annotations
 
 from enum import Enum
 
-# TODO(Fase 1): from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, field_validator
+
+# Plataformas soportadas hoy. Agregar una red = sumar su Publisher en platforms/ y su clave aca.
+PLATAFORMAS_CONOCIDAS: frozenset[str] = frozenset({"linkedin"})
 
 
 class Estado(str, Enum):
@@ -26,32 +26,49 @@ class Pilar(str, Enum):
     C = "C"  # musica
 
 
-# --- Contrato de la pieza (referencia; se materializa como modelos pydantic en Fase 1) ---
-#
-# class DestinoPublicado(BaseModel):
-#     fecha: str | None = None
-#     url: str | None = None
-#     post_id: str | None = None
-#
-# class Pieza(BaseModel):
-#     id: str                        # <fecha>-<slug>
-#     pilar: Pilar
-#     estado: Estado = Estado.DRAFT
-#     destinos: list[str]            # ["linkedin", ...]
-#     titulo: str
-#     cuerpo: str
-#     assets: list[str] = []
-#     hashtags: list[str] = []
-#     publicado: dict[str, DestinoPublicado]   # keyed by plataforma
-#
-#     def esta_publicado_en(self, plataforma: str) -> bool: ...   # idempotencia
-#
-# TODO(Fase 1): implementar Pieza/DestinoPublicado + validadores (id-slug, destinos conocidos, etc.).
+class DestinoPublicado(BaseModel):
+    """Resultado de una publicacion en una plataforma (o nulls si aun no se publico)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    fecha: str | None = None
+    url: str | None = None
+    post_id: str | None = None
 
 
-class Pieza:  # placeholder hasta Fase 1
-    """Pieza de contenido. Ver contrato arriba."""
+class Pieza(BaseModel):
+    """Una pieza de contenido versionada. Es la unidad de la fuente de verdad."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str  # <fecha>-<slug>
+    pilar: Pilar
+    estado: Estado = Estado.DRAFT
+    destinos: list[str]
+    titulo: str
+    cuerpo: str
+    assets: list[str] = []
+    hashtags: list[str] = []
+    publicado: dict[str, DestinoPublicado] = {}
+
+    @field_validator("id", "titulo", "cuerpo")
+    @classmethod
+    def _no_vacio(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("no puede estar vacio")
+        return v
+
+    @field_validator("destinos")
+    @classmethod
+    def _destinos_conocidos(cls, v: list[str]) -> list[str]:
+        if not v:
+            raise ValueError("destinos no puede estar vacio")
+        desconocidos = sorted(set(v) - PLATAFORMAS_CONOCIDAS)
+        if desconocidos:
+            raise ValueError(f"destinos desconocidos: {desconocidos}")
+        return v
 
     def esta_publicado_en(self, plataforma: str) -> bool:
-        """True si la pieza ya fue publicada en `plataforma` (para idempotencia)."""
-        raise NotImplementedError("TODO(Fase 1)")
+        """True si la pieza ya tiene un post_id en esa plataforma (para idempotencia)."""
+        destino = self.publicado.get(plataforma)
+        return bool(destino and destino.post_id)
