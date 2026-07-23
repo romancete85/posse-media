@@ -19,3 +19,6 @@ dist/
 .DS_Store
 .idea/
 .vscode/
+
+# CV/PDF con PII — no versionar (el pipeline solo lee context/*.md)
+context/*.pdf
