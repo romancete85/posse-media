@@ -102,8 +102,11 @@ Todo lo que genera la IA sale en **`estado: draft`** — nunca aprueba ni public
 
 ```bash
 posse draft "tema o nota" --pilar A            # 1 pieza draft (texto)
+posse draft --from nota.md --model qwen2.5:14b # draft desde archivo, con override de modelo
+posse ideas "un tema" --n 5 --pilar A          # backlog de N ideas draft desde un tema
 posse repurpose fuente.md --n 5 --pilar A      # N piezas draft desde una fuente larga
 posse gen-image content/<pieza>.yaml           # imagen (Google Imagen) + alt (Gemini) -> assets:
+posse list                                     # backlog: piezas por estado (draft/approved/published)
 ```
 
 **Texto — backend pluggable** (`LLM_BACKEND` en `.env`):

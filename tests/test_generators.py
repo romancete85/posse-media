@@ -49,6 +49,30 @@ def test_draft_usa_llm_mockeado(monkeypatch, tmp_path):
     assert p.cuerpo.strip() == "cuerpo del post"
 
 
+def test_draft_respeta_override_de_modelo(monkeypatch, tmp_path):
+    capturado = {}
+
+    def fake_generate(prompt, schema, **kwargs):
+        capturado["model"] = kwargs["settings"].ollama_model
+        return DraftOut(titulo="T", cuerpo="c")
+
+    monkeypatch.setattr("posse.generators.llm.generate_structured", fake_generate)
+    settings = Settings(_env_file=None, content_dir=str(tmp_path), ollama_model="qwen2.5:14b")
+    draft_mod.draft_to_file("x", "A", settings=settings)
+    assert capturado["model"] == "qwen2.5:14b"
+
+
+def test_ideas_genera_n_piezas(monkeypatch, tmp_path):
+    def fake_generate(prompt, schema, **kwargs):
+        assert schema is RepurposeOut
+        return RepurposeOut(piezas=[DraftOut(titulo="Idea", cuerpo="a")])
+
+    monkeypatch.setattr("posse.generators.llm.generate_structured", fake_generate)
+    settings = Settings(_env_file=None, content_dir=str(tmp_path))
+    paths = rep.ideas_to_files("un tema", "A", 1, settings=settings)
+    assert len(paths) == 1 and paths[0].exists()
+
+
 def test_repurpose_genera_n_piezas(monkeypatch, tmp_path):
     def fake_generate(prompt, schema, **kwargs):
         assert schema is RepurposeOut

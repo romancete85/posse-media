@@ -42,19 +42,51 @@ def refresh() -> None:
     typer.echo(f"OK. access renovado, expira: {nuevo.access_expires_at}")
 
 
+def _settings_con_modelo(model: str | None):
+    from posse.config import get_settings
+
+    s = get_settings()
+    return s.model_copy(update={"ollama_model": model, "claude_model": model}) if model else s
+
+
+@app.command("list")
+def list_piezas() -> None:
+    """Muestra el backlog de piezas por estado (approved/draft/published)."""
+    from posse import backlog
+    from posse.config import get_settings
+
+    typer.echo(backlog.render(get_settings().content_dir))
+
+
 @app.command()
-def draft(tema: str, pilar: str = "A") -> None:
+def draft(
+    tema: str = typer.Argument(None, help="Tema o nota (o usá --from)"),
+    from_file: str = typer.Option(None, "--from", help="Archivo de texto como fuente del tema"),
+    pilar: str = typer.Option("A", "--pilar"),
+    model: str = typer.Option(None, "--model", help="Override del modelo (ollama/claude)"),
+) -> None:
     """Genera una pieza draft con IA a partir de un tema/nota (no publica)."""
+    from pathlib import Path
+
     from posse import logging_conf
     from posse.generators import draft as draft_mod
 
     logging_conf.setup()
-    path = draft_mod.draft_to_file(tema, pilar)
+    if from_file:
+        tema = Path(from_file).read_text(encoding="utf-8")
+    if not tema:
+        raise typer.BadParameter("pasá un tema como argumento o un archivo con --from")
+    path = draft_mod.draft_to_file(tema, pilar, settings=_settings_con_modelo(model))
     typer.echo(f"OK: pieza draft creada en {path}")
 
 
 @app.command()
-def repurpose(fuente: str, n: int = 3, pilar: str = "A") -> None:
+def repurpose(
+    fuente: str,
+    n: int = 3,
+    pilar: str = typer.Option("A", "--pilar"),
+    model: str = typer.Option(None, "--model", help="Override del modelo"),
+) -> None:
     """Genera N piezas draft desde una fuente larga (archivo de texto). No publica."""
     from pathlib import Path
 
@@ -63,8 +95,24 @@ def repurpose(fuente: str, n: int = 3, pilar: str = "A") -> None:
 
     logging_conf.setup()
     texto = Path(fuente).read_text(encoding="utf-8")
-    paths = rep.repurpose_to_files(texto, pilar, n)
+    paths = rep.repurpose_to_files(texto, pilar, n, settings=_settings_con_modelo(model))
     typer.echo(f"OK: {len(paths)} piezas draft creadas:\n  " + "\n  ".join(str(p) for p in paths))
+
+
+@app.command()
+def ideas(
+    tema: str,
+    n: int = 5,
+    pilar: str = typer.Option("A", "--pilar"),
+    model: str = typer.Option(None, "--model", help="Override del modelo"),
+) -> None:
+    """Genera N ideas de posts draft a partir de un tema (no publica)."""
+    from posse import logging_conf
+    from posse.generators import repurpose as rep
+
+    logging_conf.setup()
+    paths = rep.ideas_to_files(tema, pilar, n, settings=_settings_con_modelo(model))
+    typer.echo(f"OK: {len(paths)} ideas draft creadas:\n  " + "\n  ".join(str(p) for p in paths))
 
 
 @app.command("gen-image")
