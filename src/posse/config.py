@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     # Ollama (homelab)
     ollama_host: str = "http://localhost:11434"  # ej. http://192.168.100.x:11434 (minipve)
     ollama_model: str = "llama3.1"               # uno de tus modelos instalados
+    ollama_keep_alive: str = "30m"               # mantiene el modelo caliente (evita recarga ~24s tras idle)
+    ollama_timeout: float = 600.0                # segundos; 14b en CPU con prompts largos tarda minutos
     # Claude (opción; solo si llm_backend=claude)
     anthropic_api_key: str = ""            # vacío -> el SDK usa el entorno/perfil
     claude_model: str = "claude-opus-4-8"

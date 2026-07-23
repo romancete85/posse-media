@@ -33,6 +33,7 @@ def test_backend_ollama_structured():
     assert seen["url"] == "http://mini:11434/api/chat"
     assert seen["body"]["model"] == "llama3.1"
     assert seen["body"]["stream"] is False
+    assert seen["body"]["keep_alive"] == "30m"  # modelo caliente (default)
     assert "format" in seen["body"]  # JSON schema para structured output
 
 

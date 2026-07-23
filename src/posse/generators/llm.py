@@ -55,8 +55,9 @@ def _ollama_structured(
         "messages": messages,
         "format": schema.model_json_schema(),  # structured outputs de Ollama
         "stream": False,
+        "keep_alive": settings.ollama_keep_alive,  # deja el modelo caliente entre llamadas
     }
-    c = client or httpx.Client(timeout=httpx.Timeout(300.0))  # CPU: qwen2.5:7b puede tardar minutos
+    c = client or httpx.Client(timeout=httpx.Timeout(settings.ollama_timeout))  # CPU: 14b tarda minutos
     resp = c.post(f"{settings.ollama_host.rstrip('/')}/api/chat", json=payload)
     resp.raise_for_status()
     content = resp.json()["message"]["content"]
