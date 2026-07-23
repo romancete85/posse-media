@@ -67,6 +67,17 @@ def repurpose(fuente: str, n: int = 3, pilar: str = "A") -> None:
     typer.echo(f"OK: {len(paths)} piezas draft creadas:\n  " + "\n  ".join(str(p) for p in paths))
 
 
+@app.command("gen-image")
+def gen_image(pieza: str, prompt: str = typer.Option(None, "--prompt", help="Prompt de la imagen")) -> None:
+    """Genera una imagen (Google Imagen) para una pieza y la agrega con alt text. No publica."""
+    from posse import logging_conf
+    from posse.generators import images
+
+    logging_conf.setup()
+    path = images.gen_image(pieza, prompt=prompt)
+    typer.echo(f"OK: imagen en {path}, agregada a {pieza}")
+
+
 @app.command()
 def validate(pieza: str) -> None:
     """Valida el schema de una pieza YAML."""

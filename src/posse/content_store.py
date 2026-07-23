@@ -45,6 +45,20 @@ def save_new(pieza: Pieza, content_dir: str | Path) -> Path:
     return path
 
 
+def add_asset(path: str | Path, asset_path: str, alt: str | None = None) -> None:
+    """Agrega un asset {path, alt} a la lista `assets` de la pieza, preservando formato."""
+    p = Path(path)
+    with p.open("r", encoding="utf-8") as f:
+        data = _yaml_rt.load(f)
+    assets = data.get("assets")
+    if not assets:
+        assets = []
+        data["assets"] = assets
+    assets.append({"path": asset_path, "alt": alt})
+    with p.open("w", encoding="utf-8") as f:
+        _yaml_rt.dump(data, f)
+
+
 def marcar_publicado(
     path: str | Path,
     plataforma: str,

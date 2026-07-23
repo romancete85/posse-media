@@ -43,10 +43,17 @@ Implementación módulo por módulo, cada uno con tests:
 **Gate de salida de Fase 1:** una pieza real pasa `draft → approved (label) → published` con `post_id`/url
 commiteados de vuelta, de forma idempotente, y el refresh de token funciona.
 
+### Frente 1 — Imágenes en LinkedIn ✅
+`assets: [{path, alt}]` (1..N) + `LinkedInPublisher._upload_image` (Images API) → `content.media` / `multiImage`. Video sigue fuera de alcance.
+
+### Frente 2 — Generación con IA (upstream del gate) ✅ texto · ✅ imágenes
+Todo produce `estado: draft`; el gate humano sigue intacto.
+- **Draft con Claude** (`posse draft`) — `claude-opus-4-8`, structured outputs → pieza draft.
+- **Repurposing** (`posse repurpose`) — fuente larga → N piezas draft.
+- **Imágenes** (`posse gen-image`) — Google Imagen genera la imagen; alt text por Claude visión; se agrega a `assets:`.
+
 ### Futuro (diseñado, no comprometido)
-- **Imágenes/assets** en LinkedIn (`upload_image()` + `assets:` con uso real).
 - **Nuevas redes** (X, Mastodon, Instagram…) vía el `Protocol` de `platforms/base.py`.
-- **Generación de contenido** upstream del gate (produce piezas `draft`).
 - **Integración n8n** (Topología 1): webhook autenticado al endpoint HTTPS público de n8n.
 - **Migración a Topología 2** (self-hosted runner en el homelab) si se necesita alcance LAN directo — solo cambia
   *dónde corre el runner*, no el diseño. Ahí sí reconecta proxmox-ai-ops (el runner sería un guest más).

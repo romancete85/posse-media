@@ -96,6 +96,20 @@ posse preview   content/2026-07-21-mi-post.yaml   # muestra EXACTO qué se publi
 - Los tokens viven en SSM, no en el repo ni en el árbol de trabajo.
 - El webhook a n8n (futuro) irá **autenticado** (token/HMAC), nunca abierto.
 
+## Generación con IA (upstream del gate)
+
+Todo lo que genera la IA sale en **`estado: draft`** — nunca aprueba ni publica. Revisás/editás/aprobás como siempre.
+
+```bash
+posse draft "tema o nota" --pilar A            # 1 pieza draft (Claude, claude-opus-4-8)
+posse repurpose fuente.md --n 5 --pilar A      # N piezas draft desde una fuente larga
+posse gen-image content/<pieza>.yaml           # imagen (Google Imagen) + alt (Claude) -> assets:
+```
+
+Requiere en `.env`: `ANTHROPIC_API_KEY` (Claude) y, para imágenes, `GEMINI_API_KEY` (Google AI).
+El texto usa **structured outputs** (pieza validada, sin parseo frágil); el alt text de las imágenes
+lo escribe Claude por visión (accesibilidad). Claude **no** genera imágenes — eso lo hace Google Imagen.
+
 ## Extensibilidad (diseñada, no construida)
 
 - **Nueva red social:** un archivo en `src/posse/platforms/` implementando el `Protocol` de `base.py` +
