@@ -101,14 +101,21 @@ posse preview   content/2026-07-21-mi-post.yaml   # muestra EXACTO qué se publi
 Todo lo que genera la IA sale en **`estado: draft`** — nunca aprueba ni publica. Revisás/editás/aprobás como siempre.
 
 ```bash
-posse draft "tema o nota" --pilar A            # 1 pieza draft (Claude, claude-opus-4-8)
+posse draft "tema o nota" --pilar A            # 1 pieza draft (texto)
 posse repurpose fuente.md --n 5 --pilar A      # N piezas draft desde una fuente larga
-posse gen-image content/<pieza>.yaml           # imagen (Google Imagen) + alt (Claude) -> assets:
+posse gen-image content/<pieza>.yaml           # imagen (Google Imagen) + alt (Gemini) -> assets:
 ```
 
-Requiere en `.env`: `ANTHROPIC_API_KEY` (Claude) y, para imágenes, `GEMINI_API_KEY` (Google AI).
-El texto usa **structured outputs** (pieza validada, sin parseo frágil); el alt text de las imágenes
-lo escribe Claude por visión (accesibilidad). Claude **no** genera imágenes — eso lo hace Google Imagen.
+**Texto — backend pluggable** (`LLM_BACKEND` en `.env`):
+- **`ollama`** (default, gratis): apunta a tu Ollama del homelab (`OLLAMA_HOST`, `OLLAMA_MODEL`).
+  Corre local, sin costo. Requiere Ollama accesible por HTTP en la LAN.
+- **`claude`** (con créditos): `claude-opus-4-8` vía API. La suscripción Claude.ai **no** sirve para la API.
+
+Ambos usan **structured outputs** (pieza validada, sin parseo frágil).
+
+**Imágenes — Google** (`GEMINI_API_KEY`): Imagen genera la imagen; **Gemini visión** escribe el alt text
+(misma key, accesibilidad). Imagen es **pago**. Alternativa gratis futura: difusión local (Stable Diffusion /
+ComfyUI) como servicio del homelab — **gateado**, proyecto aparte (ver `ROADMAP.md`).
 
 ## Extensibilidad (diseñada, no construida)
 

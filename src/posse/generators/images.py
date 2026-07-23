@@ -13,9 +13,13 @@ from typing import Callable
 
 from posse import content_store
 from posse.config import Settings, get_settings
-from posse.generators import llm
 
 log = logging.getLogger("posse.images")
+
+_ALT_PROMPT = (
+    "Escribí un alt text conciso (una frase, español rioplatense) que describa esta imagen "
+    "para accesibilidad. Devolvé solo el texto, sin comillas."
+)
 
 # Firma del generador de imágenes: (prompt, settings) -> (bytes, mime_type)
 GenerateFn = Callable[[str, Settings], tuple[bytes, str]]
@@ -34,6 +38,19 @@ def _default_generate(prompt: str, settings: Settings) -> tuple[bytes, str]:
     )
     img = resp.generated_images[0].image
     return img.image_bytes, getattr(img, "mime_type", None) or "image/png"
+
+
+def _default_alt(image_bytes: bytes, mime: str, *, settings: Settings) -> str:
+    """Alt text de la imagen con Gemini visión (misma key que Imagen). Import lazy."""
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=settings.gemini_api_key or None)
+    resp = client.models.generate_content(
+        model=settings.gemini_vision_model,
+        contents=[types.Part.from_bytes(data=image_bytes, mime_type=mime), _ALT_PROMPT],
+    )
+    return (resp.text or "").strip()
 
 
 def _prompt_from_pieza(pieza) -> str:
@@ -76,7 +93,7 @@ def gen_image(
     img_path.write_bytes(image_bytes)
     log.info("imagen generada: %s", img_path)
 
-    alt_fn = alt_fn or llm.alt_text
+    alt_fn = alt_fn or _default_alt
     alt = alt_fn(image_bytes, mime, settings=settings)
 
     content_store.add_asset(pieza_path, str(img_path), alt)

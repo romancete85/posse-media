@@ -48,11 +48,14 @@ commiteados de vuelta, de forma idempotente, y el refresh de token funciona.
 
 ### Frente 2 — Generación con IA (upstream del gate) ✅ texto · ✅ imágenes
 Todo produce `estado: draft`; el gate humano sigue intacto.
-- **Draft con Claude** (`posse draft`) — `claude-opus-4-8`, structured outputs → pieza draft.
-- **Repurposing** (`posse repurpose`) — fuente larga → N piezas draft.
-- **Imágenes** (`posse gen-image`) — Google Imagen genera la imagen; alt text por Claude visión; se agrega a `assets:`.
+- **Texto (`posse draft` / `posse repurpose`)** — backend **pluggable** (`LLM_BACKEND`):
+  **ollama** (default, homelab, gratis) | **claude** (API). Structured outputs en ambos.
+- **Imágenes (`posse gen-image`)** — Google Imagen genera; **Gemini visión** escribe el alt; a `assets:`.
 
 ### Futuro (diseñado, no comprometido)
+- **Difusión local (GATEADO)** — Stable Diffusion / ComfyUI como servicio del homelab para generar
+  imágenes gratis (mismo patrón HTTP que Ollama). Es un **proyecto aparte**, lo arranca el operador con
+  `proxmox-ai-ops`. Acá entraría como un `generate_fn` alternativo en `generators/images.py`.
 - **Nuevas redes** (X, Mastodon, Instagram…) vía el `Protocol` de `platforms/base.py`.
 - **Integración n8n** (Topología 1): webhook autenticado al endpoint HTTPS público de n8n.
 - **Migración a Topología 2** (self-hosted runner en el homelab) si se necesita alcance LAN directo — solo cambia

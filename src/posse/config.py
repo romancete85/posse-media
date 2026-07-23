@@ -31,10 +31,18 @@ class Settings(BaseSettings):
     content_dir: str = "content"
 
     # Generación con IA (upstream del gate; produce siempre drafts)
-    anthropic_api_key: str = ""            # Claude (texto + alt text). Vacío -> SDK usa el entorno.
-    claude_model: str = "claude-opus-4-8"  # modelo de generación/repurposing
-    gemini_api_key: str = ""               # Google Imagen (generación de imágenes)
+    # Backend de texto: "ollama" (homelab, gratis) | "claude" (API, con créditos)
+    llm_backend: str = "ollama"
+    # Ollama (homelab)
+    ollama_host: str = "http://localhost:11434"  # ej. http://192.168.100.x:11434 (minipve)
+    ollama_model: str = "llama3.1"               # uno de tus modelos instalados
+    # Claude (opción; solo si llm_backend=claude)
+    anthropic_api_key: str = ""            # vacío -> el SDK usa el entorno/perfil
+    claude_model: str = "claude-opus-4-8"
+    # Imágenes (Google): Imagen genera, Gemini visión escribe el alt text (misma key)
+    gemini_api_key: str = ""
     imagen_model: str = "imagen-4.0-generate-001"
+    gemini_vision_model: str = "gemini-2.5-flash"
 
 
 @lru_cache
