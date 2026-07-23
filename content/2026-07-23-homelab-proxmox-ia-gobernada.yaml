@@ -45,6 +45,7 @@ assets:
     / GPU / n8n)."
 hashtags: [Proxmox, Homelab, DevOps, CloudSecurity, IaC]
 publicado:
-  linkedin: {fecha: '2026-07-23T23:29:11.754926+00:00', url: 
-      https://www.linkedin.com/feed/update/urn:li:share:7486200774041997313, 
-      post_id: urn:li:share:7486200774041997313}
+  linkedin:
+    fecha: '2026-07-23T23:41:26.023759+00:00'
+    url: https://www.linkedin.com/feed/update/urn:li:share:7486203854133551104
+    post_id: urn:li:share:7486203854133551104
