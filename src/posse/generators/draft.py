@@ -14,10 +14,11 @@ from posse.generators import llm
 from posse.models import DestinoPublicado, Estado, Pieza, Pilar
 
 _SYSTEM = (
-    "Sos un asistente que redacta posts para el perfil personal de LinkedIn de un ingeniero "
-    "de Cloud Security / DevOps. Tono profesional pero cercano, español rioplatense (voseo). "
-    "Devolvé un título breve (metadata interna), el cuerpo del post (texto listo para publicar, "
-    "sin el título adentro) y una lista corta de hashtags relevantes sin el '#'."
+    "Sos un asistente que redacta posts para el perfil personal de LinkedIn de un ingeniero de "
+    "Cloud Security / DevOps. Tono profesional pero cercano. Usá SIEMPRE voseo rioplatense "
+    "(vos, tenés, podés, hacés); NUNCA 'vosotros'/'vuestro' ni 'tú'. Devolvé: un título breve "
+    "(metadata interna, NO va dentro del post); el cuerpo listo para publicar SIN el título y "
+    "SIN hashtags adentro; y los hashtags relevantes SOLO en el campo aparte, sin el '#'."
 )
 
 
@@ -34,17 +35,40 @@ def _slug(texto: str) -> str:
     return re.sub(r"-+", "-", s).strip("-")[:50] or "pieza"
 
 
+_HASHTAG_RE = re.compile(r"#(\w+)", re.UNICODE)
+
+
+def _normalize(cuerpo: str, hashtags: list[str]) -> tuple[str, list[str]]:
+    """Saca los #hashtags del cuerpo al campo hashtags (dedup) y limpia el cuerpo.
+
+    Los modelos suelen meter hashtags dentro del texto; al publicar se agregan de nuevo
+    (duplicación). Esto los unifica en el campo, independiente del modelo.
+    """
+    en_cuerpo = _HASHTAG_RE.findall(cuerpo)
+    cuerpo = _HASHTAG_RE.sub("", cuerpo)
+    cuerpo = re.sub(r"[ \t]+", " ", cuerpo)
+    cuerpo = re.sub(r"\n{3,}", "\n\n", cuerpo).strip()
+
+    merged: list[str] = []
+    for h in list(hashtags) + en_cuerpo:
+        h = h.lstrip("#").strip()
+        if h and h.lower() not in {m.lower() for m in merged}:
+            merged.append(h)
+    return cuerpo, merged
+
+
 def build_pieza(out: DraftOut, pilar: str, *, destinos=("linkedin",), fecha: str | None = None) -> Pieza:
-    """Ensambla una Pieza draft a partir de la salida del modelo."""
+    """Ensambla una Pieza draft a partir de la salida del modelo (con normalización)."""
     fecha = fecha or dt.date.today().isoformat()
+    cuerpo, hashtags = _normalize(out.cuerpo, out.hashtags)
     return Pieza(
         id=f"{fecha}-{_slug(out.titulo)}",
         pilar=Pilar(pilar),
         estado=Estado.DRAFT,
         destinos=list(destinos),
         titulo=out.titulo,
-        cuerpo=out.cuerpo,
-        hashtags=out.hashtags,
+        cuerpo=cuerpo,
+        hashtags=hashtags,
         assets=[],
         publicado={d: DestinoPublicado() for d in destinos},
     )

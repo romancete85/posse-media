@@ -20,6 +20,19 @@ def test_build_pieza_arma_draft():
     assert "linkedin" in p.publicado and not p.esta_publicado_en("linkedin")
 
 
+def test_normaliza_hashtags_del_cuerpo():
+    out = DraftOut(
+        titulo="X",
+        cuerpo="Texto del post. Empezá hoy. #BackupProxmox #DRHomelab",
+        hashtags=["devops"],
+    )
+    p = draft_mod.build_pieza(out, "A", fecha="2026-07-23")
+    # hashtags fuera del cuerpo, unificados en el campo (dedup, sin '#')
+    assert "#" not in p.cuerpo
+    assert p.cuerpo.strip().endswith("Empezá hoy.")
+    assert p.hashtags == ["devops", "BackupProxmox", "DRHomelab"]
+
+
 def test_draft_usa_llm_mockeado(monkeypatch, tmp_path):
     def fake_generate(prompt, schema, **kwargs):
         assert schema is DraftOut
