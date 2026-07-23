@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import datetime as dt
 import logging
+import urllib.parse
 from pathlib import Path
 from typing import Callable
 
@@ -26,6 +27,7 @@ log = logging.getLogger("posse.linkedin")
 
 API_POSTS_URL = "https://api.linkedin.com/rest/posts"
 API_IMAGES_URL = "https://api.linkedin.com/rest/images"
+API_SOCIAL_URL = "https://api.linkedin.com/rest/socialActions"
 RESTLI_VERSION = "2.0.0"
 _TIMEOUT = httpx.Timeout(60.0)  # subir imagenes puede tardar
 
@@ -169,6 +171,22 @@ class LinkedInPublisher:
         url = f"https://www.linkedin.com/feed/update/{urn}"
         log.info("post creado en LinkedIn: %s", urn)
         return PublishResult(fecha=self._clock().isoformat(), url=url, post_id=str(urn))
+
+    def comment(self, post_urn: str, text: str) -> str:
+        """Postea un comentario en un post existente (Comments API / socialActions)."""
+        c = self._client or httpx.Client(timeout=_TIMEOUT)
+        encoded = urllib.parse.quote(post_urn, safe="")
+        body = {"actor": self._person_urn, "message": {"text": _escape_commentary(text)}}
+        resp = c.post(f"{API_SOCIAL_URL}/{encoded}/comments", headers=self._headers(), json=body)
+        self._raise_for_status(resp)
+        urn = resp.headers.get("x-restli-id")
+        if not urn:
+            try:
+                urn = resp.json().get("$URN") or resp.json().get("object")
+            except Exception:  # noqa: BLE001
+                urn = None
+        log.info("comentario creado en %s: %s", post_urn, urn)
+        return str(urn) if urn else "(ok, sin urn)"
 
     @staticmethod
     def _raise_for_status(resp: httpx.Response) -> None:

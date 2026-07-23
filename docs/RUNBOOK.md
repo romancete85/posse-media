@@ -110,7 +110,13 @@ posse validate content/<pieza>.yaml   # valida el schema
    ```zsh
    posse publish content/<pieza>.yaml     # sube la imagen + postea. Idempotente.
    ```
-4. **Verificar** en LinkedIn. Pegá links / diagrama interactivo en el **1er comentario**.
+4. **Verificar** en LinkedIn.
+5. **Comentario con el link interactivo** (automatizado):
+   ```zsh
+   posse comment content/<pieza>.yaml "El diagrama, pero interactivo 👉 <link del artifact>"
+   ```
+   > Hacé **público** el artifact (botón **Share**) antes, o los demás no lo pueden abrir.
+   > El texto se escapa igual que el post (paréntesis, etc.); las URLs quedan intactas.
 
 ---
 

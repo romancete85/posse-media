@@ -99,6 +99,43 @@ def publish(
         log.info("publicado '%s' en %s: %s", pieza.id, destino, result.post_id)
 
 
+def comment(
+    path: str | Path,
+    text: str,
+    *,
+    settings: Settings | None = None,
+    store: TokenStore | None = None,
+    client=None,
+    clock: Callable[[], dt.datetime] | None = None,
+) -> str:
+    """Postea un comentario en una pieza YA publicada en LinkedIn (ej. el link interactivo)."""
+    settings = settings or get_settings()
+    store = store or get_token_store(settings)
+    clock = clock or _utcnow
+
+    pieza = content_store.load(path)
+    destino = pieza.publicado.get("linkedin")
+    if not destino or not destino.post_id:
+        raise RuntimeError(f"la pieza '{pieza.id}' no tiene post_id de LinkedIn (¿está publicada?)")
+
+    bundle = store.load()
+    if bundle is None:
+        raise RuntimeError("no hay tokens guardados; corre `posse auth` primero")
+    bundle = _ensure_fresh(bundle, settings, store, clock)
+
+    from posse.platforms.linkedin import LinkedInPublisher
+
+    pub = LinkedInPublisher(
+        access_token=bundle.access_token,
+        person_urn=bundle.person_urn,
+        version=settings.linkedin_version,
+        client=client,
+    )
+    urn = pub.comment(destino.post_id, text)
+    log.info("comentario en '%s': %s", pieza.id, urn)
+    return urn
+
+
 def publish_approved(
     *,
     settings: Settings | None = None,

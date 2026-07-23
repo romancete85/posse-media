@@ -174,6 +174,16 @@ def publish(pieza: str) -> None:
     typer.echo(f"OK: publish de {pieza} finalizado.")
 
 
+@app.command()
+def comment(pieza: str, texto: str) -> None:
+    """Postea un comentario en una pieza ya publicada (ej. el link del diagrama interactivo)."""
+    from posse import logging_conf, publisher
+
+    logging_conf.setup()
+    urn = publisher.comment(pieza, texto)
+    typer.echo(f"OK: comentario publicado ({urn})")
+
+
 @app.command("publish-approved")
 def publish_approved() -> None:
     """Publica todas las piezas 'approved' del content_dir (lo usa el workflow del label)."""
