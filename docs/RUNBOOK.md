@@ -92,6 +92,12 @@ posse validate content/<pieza>.yaml   # valida el schema
        alt: "descripción para accesibilidad"
    ```
    (Solo el `cuerpo` sale como texto del post; el `titulo` es metadata interna.)
+
+   **Capturar un diagrama (artifact) como PNG:**
+   - **Manual (0 setup):** abrí el link del artifact → tema claro → `Cmd+Shift+4`, seleccioná el
+     bloque → sale en 2x (Retina) → `mv ~/Desktop/Captura*.png content/assets/<nombre>.png`.
+   - **Automatizado (setup 1 vez):** Playwright + Chromium en el venv + `scripts/render-diagram.py`.
+     Luego: `posse-render <diagrama.html> content/assets/<nombre>.png`. *(pendiente de instalar)*
 2. **Aprobar:** en el YAML, `estado: draft` → `estado: approved`.
 3. **Publicar:**
    ```zsh
