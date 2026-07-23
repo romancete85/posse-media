@@ -7,7 +7,7 @@ titulo: Título de ejemplo
 cuerpo: |
   Este es el cuerpo del post. Texto plano, multilínea.
   La redacción se hace en otro lado; acá entra ya escrito.
-assets: []                    # Fase 1: sin uso (rutas a imágenes/video en el futuro)
+assets: []                    # imagenes: [{path: content/assets/foto.png, alt: "descripción"}]
 hashtags: []
 publicado:
   linkedin: { fecha: null, url: null, post_id: null }

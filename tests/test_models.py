@@ -44,6 +44,17 @@ def test_campo_extra_falla():
         Pieza.model_validate({**BASE, "desconocido": 1})
 
 
+def test_assets_como_objetos():
+    p = Pieza.model_validate({**BASE, "assets": [{"path": "content/assets/x.png", "alt": "foto"}]})
+    assert p.assets[0].path == "content/assets/x.png"
+    assert p.assets[0].alt == "foto"
+
+
+def test_asset_sin_path_falla():
+    with pytest.raises(ValidationError):
+        Pieza.model_validate({**BASE, "assets": [{"alt": "sin path"}]})
+
+
 def test_esta_publicado_en_con_post_id():
     p = Pieza.model_validate(
         {**BASE, "estado": "published", "publicado": {"linkedin": {"post_id": "urn:123"}}}

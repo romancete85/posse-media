@@ -14,7 +14,7 @@ def render(path: str | Path) -> str:
     """Devuelve un texto legible con el contenido exacto que se publicaria."""
     p = content_store.load(path)
     hashtags = " ".join(p.hashtags) if p.hashtags else "(ninguno)"
-    assets = ", ".join(p.assets) if p.assets else "(ninguno)"
+    assets = ", ".join(f"{a.path} (alt: {a.alt or '—'})" for a in p.assets) if p.assets else "(ninguno)"
     return "\n".join(
         [
             "──────── se publicaria ────────",

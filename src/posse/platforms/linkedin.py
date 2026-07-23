@@ -14,18 +14,20 @@ from __future__ import annotations
 
 import datetime as dt
 import logging
+from pathlib import Path
 from typing import Callable
 
 import httpx
 
-from posse.models import Pieza
+from posse.models import Asset, Pieza
 from posse.platforms.base import PublishResult
 
 log = logging.getLogger("posse.linkedin")
 
 API_POSTS_URL = "https://api.linkedin.com/rest/posts"
+API_IMAGES_URL = "https://api.linkedin.com/rest/images"
 RESTLI_VERSION = "2.0.0"
-_TIMEOUT = httpx.Timeout(30.0)
+_TIMEOUT = httpx.Timeout(60.0)  # subir imagenes puede tardar
 
 
 class LinkedInError(RuntimeError):
@@ -91,8 +93,8 @@ class LinkedInPublisher:
             "Content-Type": "application/json",
         }
 
-    def _body(self, pieza: Pieza) -> dict:
-        return {
+    def _body(self, pieza: Pieza, media: list[dict]) -> dict:
+        body = {
             "author": self._person_urn,
             "commentary": _commentary(pieza),
             "visibility": "PUBLIC",
@@ -104,10 +106,43 @@ class LinkedInPublisher:
             "lifecycleState": "PUBLISHED",
             "isReshareDisabledByAuthor": False,
         }
+        if len(media) == 1:
+            body["content"] = {"media": media[0]}
+        elif len(media) > 1:
+            body["content"] = {"multiImage": {"images": media}}
+        return body
+
+    def _upload_image(self, c: httpx.Client, asset: Asset) -> dict:
+        """Sube una imagen (initialize + PUT) y devuelve el descriptor {id, altText}."""
+        init = c.post(
+            API_IMAGES_URL,
+            params={"action": "initializeUpload"},
+            headers=self._headers(),
+            json={"initializeUploadRequest": {"owner": self._person_urn}},
+        )
+        self._raise_for_status(init)
+        value = init.json()["value"]
+        upload_url, image_urn = value["uploadUrl"], value["image"]
+
+        data = Path(asset.path).read_bytes()
+        up = c.put(
+            upload_url,
+            headers={"Authorization": f"Bearer {self._access_token}"},
+            content=data,
+        )
+        if up.status_code not in (200, 201):
+            raise LinkedInError(
+                f"upload de imagen '{asset.path}' fallo ({up.status_code})",
+                status_code=up.status_code,
+                body=up.text,
+            )
+        log.info("imagen subida: %s (%s)", image_urn, asset.path)
+        return {"id": image_urn, "altText": asset.alt or ""}
 
     def publish(self, pieza: Pieza) -> PublishResult:
         c = self._client or httpx.Client(timeout=_TIMEOUT)
-        resp = c.post(API_POSTS_URL, headers=self._headers(), json=self._body(pieza))
+        media = [self._upload_image(c, a) for a in pieza.assets]
+        resp = c.post(API_POSTS_URL, headers=self._headers(), json=self._body(pieza, media))
         self._raise_for_status(resp)
 
         urn = resp.headers.get("x-restli-id")

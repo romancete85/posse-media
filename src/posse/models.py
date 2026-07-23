@@ -36,6 +36,22 @@ class DestinoPublicado(BaseModel):
     post_id: str | None = None
 
 
+class Asset(BaseModel):
+    """Un archivo adjunto (imagen). path = ruta relativa al repo; alt = texto alternativo."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    path: str
+    alt: str | None = None
+
+    @field_validator("path")
+    @classmethod
+    def _path_no_vacio(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("path no puede estar vacio")
+        return v
+
+
 class Pieza(BaseModel):
     """Una pieza de contenido versionada. Es la unidad de la fuente de verdad."""
 
@@ -47,7 +63,7 @@ class Pieza(BaseModel):
     destinos: list[str]
     titulo: str
     cuerpo: str
-    assets: list[str] = []
+    assets: list[Asset] = []
     hashtags: list[str] = []
     publicado: dict[str, DestinoPublicado] = {}
 
