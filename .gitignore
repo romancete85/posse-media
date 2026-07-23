@@ -22,3 +22,6 @@ dist/
 
 # CV/PDF con PII — no versionar (el pipeline solo lee context/*.md)
 context/*.pdf
+
+# Imagenes de referencia de terceros (watermark) — no versionar
+context/*.png
