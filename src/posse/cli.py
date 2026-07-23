@@ -43,6 +43,31 @@ def refresh() -> None:
 
 
 @app.command()
+def draft(tema: str, pilar: str = "A") -> None:
+    """Genera una pieza draft con IA a partir de un tema/nota (no publica)."""
+    from posse import logging_conf
+    from posse.generators import draft as draft_mod
+
+    logging_conf.setup()
+    path = draft_mod.draft_to_file(tema, pilar)
+    typer.echo(f"OK: pieza draft creada en {path}")
+
+
+@app.command()
+def repurpose(fuente: str, n: int = 3, pilar: str = "A") -> None:
+    """Genera N piezas draft desde una fuente larga (archivo de texto). No publica."""
+    from pathlib import Path
+
+    from posse import logging_conf
+    from posse.generators import repurpose as rep
+
+    logging_conf.setup()
+    texto = Path(fuente).read_text(encoding="utf-8")
+    paths = rep.repurpose_to_files(texto, pilar, n)
+    typer.echo(f"OK: {len(paths)} piezas draft creadas:\n  " + "\n  ".join(str(p) for p in paths))
+
+
+@app.command()
 def validate(pieza: str) -> None:
     """Valida el schema de una pieza YAML."""
     from posse import content_store

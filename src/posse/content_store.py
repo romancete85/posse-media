@@ -30,6 +30,21 @@ def validate(path: str | Path) -> None:
     load(path)
 
 
+def save_new(pieza: Pieza, content_dir: str | Path) -> Path:
+    """Escribe una pieza nueva en content_dir como <id>.yaml. Si el id ya existe,
+    agrega un sufijo -2, -3, ... para no pisar. Devuelve la ruta escrita."""
+    d = Path(content_dir)
+    d.mkdir(parents=True, exist_ok=True)
+    path = d / f"{pieza.id}.yaml"
+    i = 2
+    while path.exists():
+        path = d / f"{pieza.id}-{i}.yaml"
+        i += 1
+    with path.open("w", encoding="utf-8") as f:
+        _yaml_rt.dump(pieza.model_dump(mode="json"), f)
+    return path
+
+
 def marcar_publicado(
     path: str | Path,
     plataforma: str,

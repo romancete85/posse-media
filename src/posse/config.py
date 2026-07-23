@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     # Contenido
     content_dir: str = "content"
 
+    # Generación con IA (upstream del gate; produce siempre drafts)
+    anthropic_api_key: str = ""            # Claude (texto + alt text). Vacío -> SDK usa el entorno.
+    claude_model: str = "claude-opus-4-8"  # modelo de generación/repurposing
+    gemini_api_key: str = ""               # Google Imagen (generación de imágenes)
+    imagen_model: str = "imagen-4.0-generate-001"
+
 
 @lru_cache
 def get_settings() -> Settings:
