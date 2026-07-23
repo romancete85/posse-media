@@ -55,13 +55,21 @@ def _utcnow() -> dt.datetime:
     return dt.datetime.now(dt.timezone.utc)
 
 
+# Caracteres reservados del formato "Little Text" de la Posts API: hay que escaparlos con '\'
+# o LinkedIn trunca/mangonea el texto (ej. un '(' sin escapar corta el post).
+_LITTLE_TEXT_RESERVED = frozenset(r"\|{}@[]()<>#*_~")
+
+
+def _escape_commentary(texto: str) -> str:
+    return "".join("\\" + c if c in _LITTLE_TEXT_RESERVED else c for c in texto)
+
+
 def _commentary(pieza: Pieza) -> str:
-    """Texto del post = cuerpo (+ hashtags al final)."""
-    texto = pieza.cuerpo.rstrip()
+    """Texto del post = cuerpo (escapado) + hashtags al final (el '#' NO se escapa)."""
+    texto = _escape_commentary(pieza.cuerpo.rstrip())
     if pieza.hashtags:
         tags = " ".join(h if h.startswith("#") else f"#{h}" for h in pieza.hashtags)
-        texto = f"{texto}\n\n{tags}"
-    # TODO(futuro): escaping "Little Text" de LinkedIn para caracteres reservados en commentary.
+        texto = f"{texto}\n\n{tags}"  # hashtags sin escapar: el '#' debe quedar para que funcionen
     return texto
 
 

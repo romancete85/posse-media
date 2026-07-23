@@ -62,6 +62,24 @@ def test_publish_envia_headers_body_y_devuelve_resultado():
     assert result.fecha == "2026-07-22T00:00:00+00:00"
 
 
+def test_commentary_escapa_reservados_pero_no_los_hashtags():
+    from posse.platforms.linkedin import _commentary
+
+    p = Pieza.model_validate(
+        {
+            "id": "x", "pilar": "A", "estado": "approved", "destinos": ["linkedin"],
+            "titulo": "t",
+            "cuerpo": "el permiso lo da la ACL (control técnico), nunca un prompt [regla].",
+            "hashtags": ["devops"],
+        }
+    )
+    c = _commentary(p)
+    assert r"\(control técnico\)" in c   # paréntesis escapados
+    assert r"\[regla\]" in c             # corchetes escapados
+    assert "#devops" in c                # hashtag NO escapado (sigue funcionando)
+    assert r"\#devops" not in c
+
+
 def test_401_auth():
     with pytest.raises(LinkedInAuthError):
         _pub(lambda r: httpx.Response(401, json={"m": "x"})).publish(PIEZA)
