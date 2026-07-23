@@ -24,6 +24,9 @@ dev = [
     "pytest-httpx>=0.30",    # mock de httpx (nunca pegarle a la API real)
     "ruff>=0.6",
 ]
+render = [
+    "playwright>=1.40",      # render de diagramas HTML -> PNG (scripts/render-diagram.py)
+]
 
 [project.scripts]
 posse = "posse.cli:app"

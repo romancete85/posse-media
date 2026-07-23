@@ -93,11 +93,18 @@ posse validate content/<pieza>.yaml   # valida el schema
    ```
    (Solo el `cuerpo` sale como texto del post; el `titulo` es metadata interna.)
 
-   **Capturar un diagrama (artifact) como PNG:**
-   - **Manual (0 setup):** abrí el link del artifact → tema claro → `Cmd+Shift+4`, seleccioná el
-     bloque → sale en 2x (Retina) → `mv ~/Desktop/Captura*.png content/assets/<nombre>.png`.
-   - **Automatizado (setup 1 vez):** Playwright + Chromium en el venv + `scripts/render-diagram.py`.
-     Luego: `posse-render <diagrama.html> content/assets/<nombre>.png`. *(pendiente de instalar)*
+   **Capturar un diagrama como PNG:**
+   - **Automatizado (recomendado):** el diagrama vive como HTML versionado en `content/assets/`.
+     ```zsh
+     posse-render content/assets/diagrama-homelab.html content/assets/diagrama-homelab.png
+     ```
+     Sale en alta resolución (2x). Oculta el panel interactivo y el footer para una captura limpia.
+     Setup (una vez): `pip install ".[render]" && python -m playwright install chromium`.
+   - **Manual (alternativa):** abrí el artifact → tema claro → `Cmd+Shift+4` → seleccioná el bloque →
+     `mv ~/Desktop/Captura*.png content/assets/<nombre>.png`.
+
+   > **Diagramas de la serie:** copiás/editás un `content/assets/*.html`, corrés `posse-render`, y la
+   > **versión interactiva** (animada) la publicás como artifact para compartir en comentarios.
 2. **Aprobar:** en el YAML, `estado: draft` → `estado: approved`.
 3. **Publicar:**
    ```zsh
