@@ -1,0 +1,50 @@
+# Serie "Homelab" · pieza 1 — presentación de la infraestructura. Sanitizada (sin IPs/hostnames/puertos/versiones).
+id: 2026-07-23-homelab-proxmox-ia-gobernada
+pilar: A
+estado: published
+destinos: [linkedin]
+titulo: '¿Quién dijo que es una locura integrar IA operativa a tu homelab?'
+cuerpo: |
+  ¿Quién dijo que es una locura integrar IA operativa a tu homelab? 🤖
+
+  La mayoría diría que no dejes una IA suelta cerca de tu infra. Coincido — por eso la mía
+  opera con límites técnicos, no con buena fe.
+
+  Arranco una serie sobre mi homelab. No es solo un rack de servicios: es una plataforma
+  gobernada donde una IA administra el cluster… pero con límites duros.
+
+  🎯 La estrategia
+  Un laboratorio real de Cloud / DevOps / Seguridad en casa, donde practico lo mismo que
+  aplico en producción: automatización, IaC, backup/DR y —lo más divertido— dejar que una IA
+  opere la infra, contenida por diseño. La regla de oro: el permiso lo da la ACL de Proxmox
+  (control técnico), nunca un prompt.
+
+  🖥️ El hardware (hoy)
+  Dos mini-PCs. Nodo 1 = producción; Nodo 2 = sandbox/staging donde la IA prueba de cero antes
+  de promover a producción. CPU-only por ahora, backup off-box y UPS.
+
+  ⚙️ Cómo está ahora
+  • Nodo 1 corre firewall, DNS, contenedores y automatización.
+  • Una capa de IA-Ops opera el sandbox vía MCP: escritura contenida a un pool, gate humano
+    para todo lo destructivo, y cada operación auditada.
+  • Backup/DR off-box, e IA local para generación de contenido y RAG.
+
+  🗺️ Lo proyectado
+  Un tercer nodo para HA real (quórum), GPU para inferencia local fluida, y orquestación de
+  flujos con n8n.
+
+  📐 El diagrama de la arquitectura está acá abajo (sanitizado: sin IPs ni datos sensibles).
+  La versión interactiva la dejo en los comentarios.
+
+  Voy a ir actualizando el avance en esta serie. 👇 ¿Qué te gustaría que profundice primero:
+  la gobernanza de la IA, el backup/DR, o la IA local?
+assets:
+- path: content/assets/diagrama-homelab.png
+  alt: "Diagrama del homelab: gate humano, IA-Ops, Nodo 1 (producción: firewall/DNS/contenedores),
+    Nodo 2 (sandbox: pruebas de IA, IA local, backup off-box) y roadmap (3er nodo
+    / GPU / n8n)."
+hashtags: [Proxmox, Homelab, DevOps, CloudSecurity, IaC]
+publicado:
+  linkedin: {fecha: '2026-07-23T23:29:11.754926+00:00', url: 
+      https://www.linkedin.com/feed/update/urn:li:share:7486200774041997313, 
+      post_id: urn:li:share:7486200774041997313}

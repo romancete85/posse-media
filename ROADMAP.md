@@ -52,6 +52,14 @@ Todo produce `estado: draft`; el gate humano sigue intacto.
   **ollama** (default, homelab, gratis) | **claude** (API). Structured outputs en ambos.
 - **Imágenes (`posse gen-image`)** — Google Imagen genera; **Gemini visión** escribe el alt; a `assets:`.
 
+### Frente futuro (GATEADO) — Animación en el feed = video
+LinkedIn muestra la imagen del post **estática** (no interactivo, no animado); la versión interactiva/animada
+va como **link al artifact en un comentario** (patrón actual). Para animación **dentro del feed** hay que subir
+**MP4**, lo que implica dos piezas nuevas:
+1. **Render animado → MP4**: Playwright graba la página (webm) + `imageio-ffmpeg` (trae ffmpeg) → MP4. Sin ffmpeg de sistema.
+2. **LinkedIn Videos API**: `register upload` de video + upload (chunked) + referencia en el post — más compleja que la Images API.
+El `gen-image`/diagrama estático + link interactivo cubre el caso hoy; el video es un proyecto dedicado.
+
 ### Futuro (diseñado, no comprometido)
 - **Difusión local (GATEADO)** — Stable Diffusion / ComfyUI como servicio del homelab para generar
   imágenes gratis (mismo patrón HTTP que Ollama). Es un **proyecto aparte**, lo arranca el operador con
