@@ -8,7 +8,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from posse import content_store
+from posse import content_store, context
 from posse.config import Settings, get_settings
 from posse.generators import llm
 from posse.models import DestinoPublicado, Estado, Pieza, Pilar
@@ -79,23 +79,27 @@ def draft(
     pilar: str,
     *,
     fecha: str | None = None,
+    usar_contexto: bool = True,
     settings: Settings | None = None,
     client=None,
 ) -> Pieza:
     """Genera una pieza draft (no la escribe a disco)."""
     settings = settings or get_settings()
+    system = context.con_contexto(_SYSTEM, settings) if usar_contexto else _SYSTEM
     out = llm.generate_structured(
         f"Tema o nota: {tema}\n\nRedactá un post.",
         DraftOut,
-        system=_SYSTEM,
+        system=system,
         settings=settings,
         client=client,
     )
     return build_pieza(out, pilar, fecha=fecha)
 
 
-def draft_to_file(tema: str, pilar: str, *, settings: Settings | None = None, client=None) -> Path:
+def draft_to_file(
+    tema: str, pilar: str, *, usar_contexto: bool = True, settings: Settings | None = None, client=None
+) -> Path:
     """Genera y escribe la pieza draft en content/. Devuelve la ruta."""
     settings = settings or get_settings()
-    pieza = draft(tema, pilar, settings=settings, client=client)
+    pieza = draft(tema, pilar, usar_contexto=usar_contexto, settings=settings, client=client)
     return content_store.save_new(pieza, settings.content_dir)

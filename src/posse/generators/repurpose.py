@@ -6,7 +6,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from posse import content_store
+from posse import content_store, context
 from posse.config import Settings, get_settings
 from posse.generators import llm
 from posse.generators.draft import DraftOut, build_pieza
@@ -41,15 +41,17 @@ def ideas(
     n: int,
     *,
     fecha: str | None = None,
+    usar_contexto: bool = True,
     settings: Settings | None = None,
     client=None,
 ) -> list[Pieza]:
     """Genera N ideas de posts draft a partir de un tema (no las escribe a disco)."""
     settings = settings or get_settings()
+    system = context.con_contexto(_SYSTEM_IDEAS, settings) if usar_contexto else _SYSTEM_IDEAS
     out = llm.generate_structured(
         f"Proponé {n} ideas de posts distintos (ángulos diferentes) sobre: {tema}",
         RepurposeOut,
-        system=_SYSTEM_IDEAS,
+        system=system,
         max_tokens=8000,
         settings=settings,
         client=client,
@@ -58,11 +60,14 @@ def ideas(
 
 
 def ideas_to_files(
-    tema: str, pilar: str, n: int, *, settings: Settings | None = None, client=None
+    tema: str, pilar: str, n: int, *, usar_contexto: bool = True, settings: Settings | None = None, client=None
 ) -> list[Path]:
     """Genera y escribe N ideas draft en content/. Devuelve las rutas."""
     settings = settings or get_settings()
-    return [content_store.save_new(p, settings.content_dir) for p in ideas(tema, pilar, n, settings=settings, client=client)]
+    return [
+        content_store.save_new(p, settings.content_dir)
+        for p in ideas(tema, pilar, n, usar_contexto=usar_contexto, settings=settings, client=client)
+    ]
 
 
 def repurpose(
@@ -71,15 +76,17 @@ def repurpose(
     n: int,
     *,
     fecha: str | None = None,
+    usar_contexto: bool = True,
     settings: Settings | None = None,
     client=None,
 ) -> list[Pieza]:
     """Genera N piezas draft desde la fuente (no las escribe a disco)."""
     settings = settings or get_settings()
+    system = context.con_contexto(_SYSTEM, settings) if usar_contexto else _SYSTEM
     out = llm.generate_structured(
         f"Generá {n} posts distintos a partir de esta fuente.\n\nFUENTE:\n{fuente}",
         RepurposeOut,
-        system=_SYSTEM,
+        system=system,
         max_tokens=8000,
         settings=settings,
         client=client,
@@ -92,10 +99,11 @@ def repurpose_to_files(
     pilar: str,
     n: int,
     *,
+    usar_contexto: bool = True,
     settings: Settings | None = None,
     client=None,
 ) -> list[Path]:
     """Genera y escribe N piezas draft en content/. Devuelve las rutas (ids únicos)."""
     settings = settings or get_settings()
-    piezas = repurpose(fuente, pilar, n, settings=settings, client=client)
+    piezas = repurpose(fuente, pilar, n, usar_contexto=usar_contexto, settings=settings, client=client)
     return [content_store.save_new(p, settings.content_dir) for p in piezas]

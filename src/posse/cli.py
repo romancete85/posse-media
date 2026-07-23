@@ -49,6 +49,24 @@ def _settings_con_modelo(model: str | None):
     return s.model_copy(update={"ollama_model": model, "claude_model": model}) if model else s
 
 
+context_app = typer.Typer(help="Contexto de grounding (perfil, proyectos, fuentes).")
+app.add_typer(context_app, name="context")
+
+
+@context_app.command("github")
+def context_github(
+    user: str = typer.Option(None, "--user", help="Usuario GitHub (default: el autenticado en gh)"),
+    visibility: str = typer.Option("public", "--visibility", help="public | private | all"),
+) -> None:
+    """Arma context/proyectos.md desde GitHub (default solo repos públicos)."""
+    from posse import context
+
+    path = context.build_github(user, visibility)
+    typer.echo(f"OK: {path} (visibility={visibility})")
+    if visibility != "public":
+        typer.echo("⚠️  Incluiste repos no-públicos: revisá que no haya contenido de clientes.")
+
+
 @app.command("list")
 def list_piezas() -> None:
     """Muestra el backlog de piezas por estado (approved/draft/published)."""
@@ -64,6 +82,7 @@ def draft(
     from_file: str = typer.Option(None, "--from", help="Archivo de texto como fuente del tema"),
     pilar: str = typer.Option("A", "--pilar"),
     model: str = typer.Option(None, "--model", help="Override del modelo (ollama/claude)"),
+    context_on: bool = typer.Option(True, "--context/--no-context", help="Usar context/ como grounding"),
 ) -> None:
     """Genera una pieza draft con IA a partir de un tema/nota (no publica)."""
     from pathlib import Path
@@ -76,7 +95,7 @@ def draft(
         tema = Path(from_file).read_text(encoding="utf-8")
     if not tema:
         raise typer.BadParameter("pasá un tema como argumento o un archivo con --from")
-    path = draft_mod.draft_to_file(tema, pilar, settings=_settings_con_modelo(model))
+    path = draft_mod.draft_to_file(tema, pilar, usar_contexto=context_on, settings=_settings_con_modelo(model))
     typer.echo(f"OK: pieza draft creada en {path}")
 
 
@@ -86,6 +105,7 @@ def repurpose(
     n: int = 3,
     pilar: str = typer.Option("A", "--pilar"),
     model: str = typer.Option(None, "--model", help="Override del modelo"),
+    context_on: bool = typer.Option(True, "--context/--no-context", help="Usar context/ como grounding"),
 ) -> None:
     """Genera N piezas draft desde una fuente larga (archivo de texto). No publica."""
     from pathlib import Path
@@ -95,7 +115,7 @@ def repurpose(
 
     logging_conf.setup()
     texto = Path(fuente).read_text(encoding="utf-8")
-    paths = rep.repurpose_to_files(texto, pilar, n, settings=_settings_con_modelo(model))
+    paths = rep.repurpose_to_files(texto, pilar, n, usar_contexto=context_on, settings=_settings_con_modelo(model))
     typer.echo(f"OK: {len(paths)} piezas draft creadas:\n  " + "\n  ".join(str(p) for p in paths))
 
 
@@ -105,13 +125,14 @@ def ideas(
     n: int = 5,
     pilar: str = typer.Option("A", "--pilar"),
     model: str = typer.Option(None, "--model", help="Override del modelo"),
+    context_on: bool = typer.Option(True, "--context/--no-context", help="Usar context/ como grounding"),
 ) -> None:
     """Genera N ideas de posts draft a partir de un tema (no publica)."""
     from posse import logging_conf
     from posse.generators import repurpose as rep
 
     logging_conf.setup()
-    paths = rep.ideas_to_files(tema, pilar, n, settings=_settings_con_modelo(model))
+    paths = rep.ideas_to_files(tema, pilar, n, usar_contexto=context_on, settings=_settings_con_modelo(model))
     typer.echo(f"OK: {len(paths)} ideas draft creadas:\n  " + "\n  ".join(str(p) for p in paths))
 
 

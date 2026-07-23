@@ -29,6 +29,9 @@ class Settings(BaseSettings):
 
     # Contenido
     content_dir: str = "content"
+    # Contexto de grounding (perfil, proyectos, fuentes)
+    context_dir: str = "context"
+    context_max_chars: int = 6000  # tope: en 14b CPU, más contexto = prompt más lento
 
     # Generación con IA (upstream del gate; produce siempre drafts)
     # Backend de texto: "ollama" (homelab, gratis) | "claude" (API, con créditos)

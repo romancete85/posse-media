@@ -109,6 +109,16 @@ posse gen-image content/<pieza>.yaml           # imagen (Google Imagen) + alt (G
 posse list                                     # backlog: piezas por estado (draft/approved/published)
 ```
 
+**Contexto de grounding (`context/`):** los generadores aterrizan en tu marca. Carpeta `context/`
+con markdown que se inyecta en cada generación (tope `CONTEXT_MAX_CHARS`, default 6000):
+- `context/perfil.md` — tu LinkedIn (**manual**: no hay API self-serve; pegá headline/about/experiencia).
+- `context/proyectos.md` — tus repos GitHub, autogenerable:
+  ```bash
+  posse context github                    # solo repos PÚBLICOS (excluye privados de clientes)
+  posse context github --visibility all   # incluye privados (¡curá que no haya cosas de clientes!)
+  ```
+- Desactivar por corrida: `posse draft "..." --no-context`.
+
 **Texto — backend pluggable** (`LLM_BACKEND` en `.env`):
 - **`ollama`** (default, gratis): Ollama del homelab — **CT 120 en minipve2**, `http://192.168.100.154:11434`
   (endpoint/modelos documentados en `proxmox-ai-ops/docs/OLLAMA-AIBOX.md`). Modelos: `llama3.2:3b` (rápido),
