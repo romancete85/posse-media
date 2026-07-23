@@ -107,8 +107,9 @@ posse gen-image content/<pieza>.yaml           # imagen (Google Imagen) + alt (G
 ```
 
 **Texto — backend pluggable** (`LLM_BACKEND` en `.env`):
-- **`ollama`** (default, gratis): apunta a tu Ollama del homelab (`OLLAMA_HOST`, `OLLAMA_MODEL`).
-  Corre local, sin costo. Requiere Ollama accesible por HTTP en la LAN.
+- **`ollama`** (default, gratis): Ollama del homelab — **CT 120 en minipve2**, `http://192.168.100.154:11434`
+  (endpoint/modelos documentados en `proxmox-ai-ops/docs/OLLAMA-AIBOX.md`). Modelos: `llama3.2:3b` (rápido),
+  `qwen2.5:7b` (calidad, lento en CPU). Corre local, sin costo, dentro de la LAN.
 - **`claude`** (con créditos): `claude-opus-4-8` vía API. La suscripción Claude.ai **no** sirve para la API.
 
 Ambos usan **structured outputs** (pieza validada, sin parseo frágil).

@@ -56,7 +56,7 @@ def _ollama_structured(
         "format": schema.model_json_schema(),  # structured outputs de Ollama
         "stream": False,
     }
-    c = client or httpx.Client(timeout=httpx.Timeout(180.0))  # la inferencia local puede tardar
+    c = client or httpx.Client(timeout=httpx.Timeout(300.0))  # CPU: qwen2.5:7b puede tardar minutos
     resp = c.post(f"{settings.ollama_host.rstrip('/')}/api/chat", json=payload)
     resp.raise_for_status()
     content = resp.json()["message"]["content"]
