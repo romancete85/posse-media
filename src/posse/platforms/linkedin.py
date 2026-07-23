@@ -173,7 +173,12 @@ class LinkedInPublisher:
         return PublishResult(fecha=self._clock().isoformat(), url=url, post_id=str(urn))
 
     def comment(self, post_urn: str, text: str) -> str:
-        """Postea un comentario en un post existente (Comments API / socialActions)."""
+        """Postea un comentario en un post existente (Comments API / socialActions).
+
+        ⚠️ Requiere el producto **partner** `partnerApiSocialActions` de LinkedIn — NO es self-serve.
+        Con la app self-serve (`w_member_social`) devuelve 403 ACCESS_DENIED. El comentario, en la
+        práctica, se hace a mano en la UI. El código queda por si se obtiene acceso partner.
+        """
         c = self._client or httpx.Client(timeout=_TIMEOUT)
         encoded = urllib.parse.quote(post_urn, safe="")
         body = {"actor": self._person_urn, "message": {"text": _escape_commentary(text)}}

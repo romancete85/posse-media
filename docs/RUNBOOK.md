@@ -111,12 +111,11 @@ posse validate content/<pieza>.yaml   # valida el schema
    posse publish content/<pieza>.yaml     # sube la imagen + postea. Idempotente.
    ```
 4. **Verificar** en LinkedIn.
-5. **Comentario con el link interactivo** (automatizado):
-   ```zsh
-   posse comment content/<pieza>.yaml "El diagrama, pero interactivo 👉 <link del artifact>"
-   ```
-   > Hacé **público** el artifact (botón **Share**) antes, o los demás no lo pueden abrir.
-   > El texto se escapa igual que el post (paréntesis, etc.); las URLs quedan intactas.
+5. **Comentario con el link interactivo:**
+   - ⚠️ `posse comment` usa la **Comments API**, que es **partner-gated** (`partnerApiSocialActions`):
+     **NO** funciona con la app self-serve (`w_member_social`) → **403 ACCESS_DENIED**. Requiere
+     aprobación de partner de LinkedIn (no self-serve). El código queda listo por si algún día lo tenés.
+   - **Práctico (hoy):** comentá **a mano** en la UI. Hacé público el artifact (**Share**) y pegá el link.
 
 ---
 
