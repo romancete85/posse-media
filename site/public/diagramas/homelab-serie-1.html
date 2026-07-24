@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homelab · Proxmox AI-Ops — arquitectura</title>
+</head>
+<body>
+<style>
+  :root {
+    --ground: #eef1f4; --surface: #ffffff; --surface-2: #f6f8fa;
+    --ink: #1a2028; --muted: #6b7684; --line: #c9d2db; --hair: #dde3ea;
+    --gate: #c07c0a; --gate-bg: #fbf1dd;
+    --ops: #4f46e5; --ops-bg: #ebeafc;
+    --prod: #0e7c86; --prod-bg: #e2f4f4;
+    --sbx: #7c3aed; --sbx-bg: #f0eafd;
+    --bkp: #157f3c; --bkp-bg: #e4f5e9;
+    --future: #7a8798;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0e131a; --surface: #161d26; --surface-2: #1c2530;
+      --ink: #e7edf3; --muted: #93a1b1; --line: #33404e; --hair: #26313d;
+      --gate: #f0b429; --gate-bg: #2c2410;
+      --ops: #8f8bf5; --ops-bg: #1e1d38;
+      --prod: #2dd4bf; --prod-bg: #0d2b2b;
+      --sbx: #a78bfa; --sbx-bg: #21193a;
+      --bkp: #4ade80; --bkp-bg: #0f2a19;
+      --future: #8595a6;
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #eef1f4; --surface: #ffffff; --surface-2: #f6f8fa;
+    --ink: #1a2028; --muted: #6b7684; --line: #c9d2db; --hair: #dde3ea;
+    --gate: #c07c0a; --gate-bg: #fbf1dd; --ops: #4f46e5; --ops-bg: #ebeafc;
+    --prod: #0e7c86; --prod-bg: #e2f4f4; --sbx: #7c3aed; --sbx-bg: #f0eafd;
+    --bkp: #157f3c; --bkp-bg: #e4f5e9; --future: #7a8798;
+  }
+  :root[data-theme="dark"] {
+    --ground: #0e131a; --surface: #161d26; --surface-2: #1c2530;
+    --ink: #e7edf3; --muted: #93a1b1; --line: #33404e; --hair: #26313d;
+    --gate: #f0b429; --gate-bg: #2c2410; --ops: #8f8bf5; --ops-bg: #1e1d38;
+    --prod: #2dd4bf; --prod-bg: #0d2b2b; --sbx: #a78bfa; --sbx-bg: #21193a;
+    --bkp: #4ade80; --bkp-bg: #0f2a19; --future: #8595a6;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 20px 40px; }
+
+  header { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 24px;
+    justify-content: space-between; margin-bottom: 18px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  h1 { font-family: var(--font-mono); font-size: clamp(22px, 3.4vw, 32px); font-weight: 700;
+    margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+  .badge { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em;
+    color: var(--bkp); border: 1px solid var(--bkp); border-radius: 999px;
+    padding: 4px 10px; white-space: nowrap; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 0 16px;
+    font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .dot { width: 11px; height: 11px; border-radius: 3px; }
+
+  .canvas { background: var(--surface); border: 1px solid var(--hair); border-radius: 16px;
+    padding: 10px; overflow-x: auto; box-shadow: 0 1px 0 rgba(0,0,0,.03); }
+  svg { display: block; width: 100%; height: auto; min-width: 720px; }
+
+  .chev { color: var(--ops); font-weight: 800; margin-right: 2px; }
+
+  /* SVG node system */
+  .node { cursor: pointer; filter: drop-shadow(0 1.5px 2px rgba(15,25,40,.16)); }
+  .node rect { rx: 11; transition: filter .15s ease, transform .15s ease; }
+  .node:hover rect, .node:focus-visible rect { filter: brightness(1.04) saturate(1.05); }
+  .node:focus-visible { outline: none; }
+  .node:focus-visible rect { stroke-width: 2.5; }
+  .n-label { font-family: var(--font-mono); font-size: 15px; font-weight: 600; fill: var(--ink); }
+  .n-sub { font-family: var(--font-sans); font-size: 11px; fill: var(--muted); }
+
+  .zone-gate rect { fill: var(--gate-bg); stroke: var(--gate); stroke-width: 1.5; }
+  .zone-ops  rect { fill: var(--ops-bg);  stroke: var(--ops);  stroke-width: 1.5; }
+  .zone-prod rect { fill: var(--prod-bg); stroke: var(--prod); stroke-width: 1.5; }
+  .zone-sbx  rect { fill: var(--sbx-bg);  stroke: var(--sbx);  stroke-width: 1.5; }
+  .zone-bkp  rect { fill: var(--bkp-bg);  stroke: var(--bkp);  stroke-width: 1.5; }
+
+  .container { fill: var(--surface-2); stroke-width: 1.6; rx: 14; }
+  .c-prod { stroke: var(--prod); } .c-sbx { stroke: var(--sbx); }
+  .c-future { stroke: var(--future); stroke-dasharray: 6 5; fill: var(--surface-2); }
+  .c-title { font-family: var(--font-mono); font-size: 15px; font-weight: 700; letter-spacing: .02em; }
+  .t-prod { fill: var(--prod); } .t-sbx { fill: var(--sbx); } .t-future { fill: var(--future); }
+
+  .conn { fill: none; stroke: var(--line); stroke-width: 1.8; }
+  .conn-d { fill: none; stroke: var(--future); stroke-width: 1.7; stroke-dasharray: 6 5; }
+  @media (prefers-reduced-motion: no-preference) {
+    .conn-d { animation: ants .7s linear infinite; }
+  }
+  @keyframes ants { to { stroke-dashoffset: -11; } }
+  .conn-lbl { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); }
+  .chip { font-family: var(--font-mono); font-size: 12.5px; fill: var(--ink); }
+  .arrow { fill: var(--line); } .arrow-d { fill: var(--future); }
+
+  /* detail panel */
+  .detail { margin-top: 16px; display: grid; grid-template-columns: auto 1fr; gap: 14px;
+    align-items: start; background: var(--surface-2); border: 1px solid var(--hair);
+    border-radius: 12px; padding: 16px 18px; min-height: 70px; }
+  .detail .key { font-family: var(--font-mono); font-weight: 700; font-size: 14px;
+    padding: 3px 10px; border-radius: 8px; white-space: nowrap; }
+  .detail .txt { font-size: 15px; line-height: 1.5; margin: 2px 0 0; color: var(--ink); }
+  .detail.empty .txt { color: var(--muted); }
+  .foot { margin-top: 14px; font-family: var(--font-mono); font-size: 11.5px;
+    color: var(--muted); letter-spacing: .02em; }
+  @media (max-width: 560px) { .detail { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Homelab · serie 1 — arquitectura</p>
+      <h1><span class="chev">❯</span>Proxmox AI-Ops: una infra que opera la IA… con límites</h1>
+    </div>
+    <span class="badge">✓ sanitizado · sin IPs/VLANs</span>
+  </header>
+
+  <div class="legend" aria-hidden="true">
+    <span><i class="dot" style="background:var(--gate)"></i>Gobernanza</span>
+    <span><i class="dot" style="background:var(--ops)"></i>IA-Ops</span>
+    <span><i class="dot" style="background:var(--prod)"></i>Producción</span>
+    <span><i class="dot" style="background:var(--sbx)"></i>Sandbox</span>
+    <span><i class="dot" style="background:var(--bkp)"></i>Backup / DR</span>
+    <span><i class="dot" style="background:var(--future)"></i>Proyectado</span>
+  </div>
+
+  <div class="canvas">
+    <svg viewBox="0 0 1080 720" role="img" aria-label="Diagrama de la arquitectura del homelab Proxmox AI-Ops">
+      <defs>
+        <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path class="arrow" d="M0 0 L9 4.5 L0 9 Z"/>
+        </marker>
+        <marker id="ahd" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path class="arrow-d" d="M0 0 L9 4.5 L0 9 Z"/>
+        </marker>
+      </defs>
+
+      <!-- connectors (drawn first, under nodes) -->
+      <path class="conn" marker-end="url(#ah)" d="M300 58 L424 60"/>
+      <path class="conn" marker-end="url(#ah)" d="M540 100 C 470 150, 360 150, 300 186"/>
+      <path class="conn" marker-end="url(#ah)" d="M640 100 C 720 150, 800 150, 792 186"/>
+      <path class="conn-d" marker-end="url(#ahd)" d="M492 358 L586 358"/>
+      <path class="conn-d" marker-end="url(#ahd)" d="M660 494 L660 520 L300 520 L300 494"/>
+      <text class="conn-lbl" x="480" y="512" text-anchor="middle">promover a prod</text>
+      <path class="conn-d" d="M900 494 L900 556"/>
+
+      <!-- Gate humano -->
+      <g class="node zone-gate" data-id="gate" tabindex="0" role="button" aria-label="Gate humano">
+        <rect x="72" y="28" width="228" height="60"/>
+        <text class="n-label" x="92" y="54">👤 Gate humano</text>
+        <text class="n-sub" x="92" y="74">aprueba lo destructivo</text>
+      </g>
+
+      <!-- IA-Ops -->
+      <g class="node zone-ops" data-id="ops" tabindex="0" role="button" aria-label="IA-Ops">
+        <rect x="424" y="20" width="320" height="80"/>
+        <text class="n-label" x="446" y="52">🤖 IA-Ops</text>
+        <text class="n-sub" x="446" y="74">opera vía MCP · contenida · auditada</text>
+      </g>
+
+      <!-- Nodo 1 -->
+      <rect class="container c-prod" x="72" y="186" width="448" height="300"/>
+      <text class="c-title t-prod" x="92" y="216">🖥️ Nodo 1 · Producción</text>
+      <g class="node zone-prod" data-id="fw" tabindex="0" role="button" aria-label="Firewall">
+        <rect x="96" y="248" width="196" height="56"/>
+        <text class="n-label" x="114" y="282" style="font-size:14px">🛡️ Firewall</text>
+      </g>
+      <g class="node zone-prod" data-id="dns" tabindex="0" role="button" aria-label="DNS">
+        <rect x="308" y="248" width="188" height="56"/>
+        <text class="n-label" x="326" y="282" style="font-size:14px">🌐 DNS</text>
+      </g>
+      <g class="node zone-prod" data-id="apps" tabindex="0" role="button" aria-label="Contenedores y automatización">
+        <rect x="96" y="326" width="400" height="56"/>
+        <text class="n-label" x="114" y="360" style="font-size:14px">📦 Contenedores / Automatización</text>
+      </g>
+
+      <!-- Nodo 2 -->
+      <rect class="container c-sbx" x="560" y="186" width="448" height="300"/>
+      <text class="c-title t-sbx" x="580" y="216">🧪 Nodo 2 · Sandbox / Staging</text>
+      <g class="node zone-sbx" data-id="pruebas" tabindex="0" role="button" aria-label="Pruebas de la IA">
+        <rect x="584" y="248" width="196" height="56"/>
+        <text class="n-label" x="602" y="282" style="font-size:14px">🧪 Pruebas de la IA</text>
+      </g>
+      <g class="node zone-sbx" data-id="llm" tabindex="0" role="button" aria-label="IA local">
+        <rect x="796" y="248" width="188" height="56"/>
+        <text class="n-label" x="814" y="282" style="font-size:14px">🧠 IA local</text>
+      </g>
+      <g class="node zone-bkp" data-id="backup" tabindex="0" role="button" aria-label="Backup off-box">
+        <rect x="584" y="326" width="400" height="56"/>
+        <text class="n-label" x="602" y="360" style="font-size:14px">💾 Backup off-box (DR)</text>
+      </g>
+
+      <!-- Proyectado -->
+      <rect class="container c-future" x="72" y="556" width="936" height="120"/>
+      <text class="c-title t-future" x="92" y="588">🗺️ Proyectado</text>
+      <g class="node" data-id="future" tabindex="0" role="button" aria-label="Proyectado">
+        <text class="chip" x="96" y="632">▸ 3er nodo → HA real (quórum)</text>
+        <text class="chip" x="416" y="632">▸ GPU → inferencia local fluida</text>
+        <text class="chip" x="736" y="632">▸ n8n → orquestación</text>
+        <rect x="80" y="600" width="920" height="60" fill="transparent" stroke="none"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="detail empty" id="detail">
+    <span class="key" id="dkey" style="background:var(--hair);color:var(--muted)">·</span>
+    <p class="txt" id="dtxt">Pasá el cursor o tocá un bloque para ver el detalle. La regla de oro: el permiso lo da la ACL de Proxmox (control técnico), nunca un prompt.</p>
+  </div>
+
+  <p class="foot" id="foot">© Roman Fandrich · homelab · diagrama conceptual (sin datos sensibles)</p>
+</div>
+
+<script>
+  const DATA = {
+    gate:    ["Gate humano", "var(--gate)", "Toda operación destructiva requiere confirmación humana explícita. La IA nunca se auto-otorga permisos."],
+    ops:     ["IA-Ops", "var(--ops)", "Claude opera el cluster vía MCP con escritura contenida a un pool sandbox; cada acción queda auditada. El permiso lo da la ACL de Proxmox, no el prompt."],
+    fw:      ["Firewall", "var(--prod)", "Firewall del homelab: segmentación de red y control de tráfico."],
+    dns:     ["DNS", "var(--prod)", "Resolución DNS interna del homelab + ad-block."],
+    apps:    ["Contenedores / Automatización", "var(--prod)", "Servicios en contenedores y flujos de automatización del día a día."],
+    pruebas: ["Pruebas de la IA", "var(--sbx)", "La IA crea, configura y valida guests de cero, sin riesgo para producción. Lo que valida OK se promueve a prod."],
+    llm:     ["IA local", "var(--sbx)", "Inferencia local con modelos open-source para generación de contenido y RAG, sin costo de API."],
+    backup:  ["Backup off-box (DR)", "var(--bkp)", "Respaldo del cluster fuera del nodo principal: copias off-box para disaster recovery."],
+    future:  ["Proyectado", "var(--future)", "Próximos pasos: HA real con un tercer nodo (quórum), GPU para IA local fluida, y orquestación de flujos con n8n."]
+  };
+  const detail = document.getElementById('detail');
+  const dkey = document.getElementById('dkey'), dtxt = document.getElementById('dtxt');
+  function show(id) {
+    const d = DATA[id]; if (!d) return;
+    detail.classList.remove('empty');
+    dkey.textContent = d[0]; dkey.style.background = d[1]; dkey.style.color = '#fff';
+    dtxt.textContent = d[2];
+  }
+  document.querySelectorAll('.node[data-id]').forEach(n => {
+    const id = n.getAttribute('data-id');
+    n.addEventListener('mouseenter', () => show(id));
+    n.addEventListener('click', () => show(id));
+    n.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(id); } });
+  });
+</script>
+
+</body>
+</html>

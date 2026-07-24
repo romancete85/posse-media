@@ -1,0 +1,7 @@
+# Server estático de los diagramas. Solo sirve /srv (= ./public).
+# TLS y dominio los pone Cloudflare (Tunnel) — acá va HTTP plano en :80.
+:80 {
+	root * /srv
+	encode gzip
+	file_server
+}

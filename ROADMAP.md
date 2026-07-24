@@ -60,6 +60,12 @@ va como **link al artifact en un comentario** (patrón actual). Para animación 
 2. **LinkedIn Videos API**: `register upload` de video + upload (chunked) + referencia en el post — más compleja que la Images API.
 El `gen-image`/diagrama estático + link interactivo cubre el caso hoy; el video es un proyecto dedicado.
 
+### Frente — Sitio de diagramas self-hosted ✅ construido · deploy = operador
+Sitio estático (Caddy) con los diagramas interactivos/animados de la serie, en `site/`. Se expone por
+**Cloudflare Tunnel** (CT 200) → link **propio y permanente** (`https://diagramas.<dominio>/...`), sin
+depender de claude.ai ni del partner API, y sin abrir puertos (contenido estático + sanitizado = bajo riesgo).
+El **contenido** (`site/public/`) es de este repo; el **túnel/DNS** lo cablea el operador (red/host). Ver `site/DEPLOY.md`.
+
 ### Futuro (diseñado, no comprometido)
 - **Difusión local (GATEADO)** — Stable Diffusion / ComfyUI como servicio del homelab para generar
   imágenes gratis (mismo patrón HTTP que Ollama). Es un **proyecto aparte**, lo arranca el operador con

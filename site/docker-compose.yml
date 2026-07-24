@@ -1,0 +1,11 @@
+# Sirve el sitio estático de diagramas. Exponer por Cloudflare Tunnel (ver DEPLOY.md).
+services:
+  diagramas:
+    image: caddy:2-alpine
+    container_name: posse-diagramas
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./public:/srv:ro        # solo contenido público (Caddyfile/compose no se sirven)
+    ports:
+      - "8088:80"               # LAN: el Cloudflare Tunnel apunta a http://<host>:8088
