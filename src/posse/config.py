@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     imagen_model: str = "imagen-4.0-generate-001"
     gemini_vision_model: str = "gemini-2.5-flash"
+    # Alt text: "gemini" (rápido) | "ollama" (visión local en CT 120, ~80-90s/img en CPU)
+    alt_backend: str = "gemini"
+    ollama_vision_model: str = "llava:7b"
 
 
 @lru_cache

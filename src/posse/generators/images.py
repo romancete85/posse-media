@@ -7,9 +7,12 @@ la llamada está aislada en `_default_generate` para que los tests la mockeen (n
 
 from __future__ import annotations
 
+import base64
 import logging
 from pathlib import Path
 from typing import Callable
+
+import httpx
 
 from posse import content_store
 from posse.config import Settings, get_settings
@@ -40,8 +43,8 @@ def _default_generate(prompt: str, settings: Settings) -> tuple[bytes, str]:
     return img.image_bytes, getattr(img, "mime_type", None) or "image/png"
 
 
-def _default_alt(image_bytes: bytes, mime: str, *, settings: Settings) -> str:
-    """Alt text de la imagen con Gemini visión (misma key que Imagen). Import lazy."""
+def _gemini_alt(image_bytes: bytes, mime: str, *, settings: Settings) -> str:
+    """Alt text con Gemini visión (misma key que Imagen). Import lazy."""
     from google import genai
     from google.genai import types
 
@@ -51,6 +54,28 @@ def _default_alt(image_bytes: bytes, mime: str, *, settings: Settings) -> str:
         contents=[types.Part.from_bytes(data=image_bytes, mime_type=mime), _ALT_PROMPT],
     )
     return (resp.text or "").strip()
+
+
+def _ollama_alt(image_bytes: bytes, mime: str, *, settings: Settings, client: httpx.Client | None = None) -> str:
+    """Alt text con visión local en Ollama (CT 120). Lento en CPU (~80-90s/img)."""
+    b64 = base64.standard_b64encode(image_bytes).decode("ascii")
+    payload = {
+        "model": settings.ollama_vision_model,
+        "messages": [{"role": "user", "content": _ALT_PROMPT, "images": [b64]}],
+        "stream": False,
+        "keep_alive": settings.ollama_keep_alive,
+    }
+    c = client or httpx.Client(timeout=httpx.Timeout(settings.ollama_timeout))
+    resp = c.post(f"{settings.ollama_host.rstrip('/')}/api/chat", json=payload)
+    resp.raise_for_status()
+    return resp.json()["message"]["content"].strip()
+
+
+def _alt(image_bytes: bytes, mime: str, *, settings: Settings, client=None) -> str:
+    """Dispatcher del alt text según settings.alt_backend."""
+    if settings.alt_backend == "ollama":
+        return _ollama_alt(image_bytes, mime, settings=settings, client=client)
+    return _gemini_alt(image_bytes, mime, settings=settings)
 
 
 def _prompt_from_pieza(pieza) -> str:
@@ -93,7 +118,7 @@ def gen_image(
     img_path.write_bytes(image_bytes)
     log.info("imagen generada: %s", img_path)
 
-    alt_fn = alt_fn or _default_alt
+    alt_fn = alt_fn or _alt
     alt = alt_fn(image_bytes, mime, settings=settings)
 
     content_store.add_asset(pieza_path, str(img_path), alt)
