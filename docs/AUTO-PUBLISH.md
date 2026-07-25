@@ -29,7 +29,12 @@ Guía operativa de tres frentes nuevos del pipeline:
    > mañana ART, la fecha coincide. El runner define la TZ.
 
 ### Enganche en n8n
-No puedo cablear n8n desde acá (el conector pide autorización interactiva). Dos formas, elegí una:
+n8n corre en el homelab: **VMID 115 `n8n-sandbox`, pool `ai-managed`, `http://192.168.100.213:5678`**
+(healthz OK; REST API `/api/v1` habilitada, requiere `X-N8N-API-KEY` = `/root/.n8n-api-key`; también
+detrás del túnel `n8n.sysdevops.cloudns.be`). Es alcanzable desde la LAN. Dos formas, elegí una:
+
+> El **conector MCP** de claude.ai ("n8n") es aparte y pide OAuth interactivo; no hace falta para esto —
+> la REST API de n8n alcanza para crear el workflow (con la API key) o se arma a mano en la UI.
 
 **Opción 1 — Webhook** (n8n en Docker, posse en otro host):
 1. En el host donde vive posse, corré el webhook (dejalo como servicio):

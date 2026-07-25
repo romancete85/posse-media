@@ -57,7 +57,8 @@ Todo produce `estado: draft`; el gate humano sigue intacto.
 `scripts/webhook.py` (webhook stdlib con token compartido). n8n hace **Schedule → HTTP Request** (o
 **Execute Command** directo). El **gate humano intacto**: solo se publica lo `approved`.
 **Límite:** el token de LinkedIn expira ~60 días sin refresh → `posse token-status` avisa; se re-autentica
-a mano. Ver **`docs/AUTO-PUBLISH.md`**. (El cableado de n8n lo hace el operador; el conector pide auth.)
+a mano. Ver **`docs/AUTO-PUBLISH.md`**. n8n corre en la LAN (VMID 115 `ai-managed`,
+`http://192.168.100.213:5678`, REST API con `X-N8N-API-KEY`); el workflow se crea por API o en la UI.
 
 ### Frente 4 — Cross-post multi-red ✅ Mastodon · 🔒 X (API paga)
 Una pieza va a varios `destinos: [linkedin, mastodon]`. **Mastodon** self-serve (token simple, media+alt,
