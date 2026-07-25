@@ -84,6 +84,33 @@ def set_variante(
         _yaml_rt.dump(data, f)
 
 
+def set_metricas(
+    path: str | Path,
+    plataforma: str,
+    *,
+    fecha: str,
+    valores: dict[str, int],
+) -> None:
+    """Escribe/actualiza metricas[plataforma] con los números registrados a mano (posse metrics).
+
+    `valores`: solo las claves con dato (impresiones/reacciones/comentarios/clics/seguidores).
+    Preserva comentarios/formato; no cambia el estado de la pieza.
+    """
+    p = Path(path)
+    with p.open("r", encoding="utf-8") as f:
+        data = _yaml_rt.load(f)
+
+    metricas = data.setdefault("metricas", {})
+    plat = metricas.setdefault(plataforma, {})
+    plat["fecha"] = fecha
+    for k, v in valores.items():
+        if v is not None:
+            plat[k] = v
+
+    with p.open("w", encoding="utf-8") as f:
+        _yaml_rt.dump(data, f)
+
+
 def marcar_publicado(
     path: str | Path,
     plataforma: str,

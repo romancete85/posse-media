@@ -52,6 +52,25 @@ Todo produce `estado: draft`; el gate humano sigue intacto.
   **ollama** (default, homelab, gratis) | **claude** (API). Structured outputs en ambos.
 - **Imágenes (`posse gen-image`)** — Google Imagen genera; **Gemini visión** escribe el alt; a `assets:`.
 
+### Frente 3 — Auto-publicar en fecha ✅ (lo dispara n8n)
+`Pieza.programado` (YYYY-MM-DD) + `posse publish-due` (publica lo `approved` vencido, idempotente) +
+`scripts/webhook.py` (webhook stdlib con token compartido). n8n hace **Schedule → HTTP Request** (o
+**Execute Command** directo). El **gate humano intacto**: solo se publica lo `approved`.
+**Límite:** el token de LinkedIn expira ~60 días sin refresh → `posse token-status` avisa; se re-autentica
+a mano. Ver **`docs/AUTO-PUBLISH.md`**. (El cableado de n8n lo hace el operador; el conector pide auth.)
+
+### Frente 4 — Cross-post multi-red ✅ Mastodon · 🔒 X (API paga)
+Una pieza va a varios `destinos: [linkedin, mastodon]`. **Mastodon** self-serve (token simple, media+alt,
+idempotencia por id). **X/Twitter** listo pero gateado tras la API paga (~USD 100/mes). Texto por red vía
+`Pieza.variantes[destino]` + `posse adapt <pieza> <red>` (genera la versión corta con IA). Registry con
+credenciales por plataforma; el token de LinkedIn se carga solo si un destino lo necesita.
+
+### Frente 5 — Métricas ✅ log manual (API partner-gated)
+Investigado: la API de analytics de LinkedIn (`memberCreatorPostAnalytics`) es **partner-gated** para
+perfiles personales (Community Management API: Company Page + demo + producto multi-usuario; rechaza uso
+personal). Member Data Portability = solo EEA/Suiza y sin analytics. → **No hay lectura self-serve por API.**
+Solución: `posse metrics` (registro manual desde la UI, 10 seg) + `posse report` (qué pilar/tema rinde).
+
 ### Frente futuro (GATEADO) — Animación en el feed = video
 LinkedIn muestra la imagen del post **estática** (no interactivo, no animado); la versión interactiva/animada
 va como **link al artifact en un comentario** (patrón actual). Para animación **dentro del feed** hay que subir

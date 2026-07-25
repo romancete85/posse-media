@@ -37,6 +37,37 @@ class DestinoPublicado(BaseModel):
     post_id: str | None = None
 
 
+class Metrica(BaseModel):
+    """Métricas de una pieza en una plataforma (registro manual desde la UI de LinkedIn).
+
+    La API de analytics de LinkedIn es partner-gated para perfiles personales; se cargan a mano
+    con `posse metrics` (copiás los números de 'Ver analíticas' del post).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    fecha: str | None = None       # cuándo registraste los números (YYYY-MM-DD)
+    impresiones: int | None = None
+    reacciones: int | None = None
+    comentarios: int | None = None
+    clics: int | None = None       # clics al enlace/comentario
+    seguidores: int | None = None  # seguidores nuevos atribuibles
+
+    @property
+    def engagement(self) -> int | None:
+        """Suma de interacciones (reacciones + comentarios + clics), o None si no hay datos."""
+        vals = [x for x in (self.reacciones, self.comentarios, self.clics) if x is not None]
+        return sum(vals) if vals else None
+
+    @property
+    def engagement_rate(self) -> float | None:
+        """Engagement / impresiones (0..1), o None si faltan impresiones."""
+        eng = self.engagement
+        if self.impresiones and eng is not None:
+            return eng / self.impresiones
+        return None
+
+
 class Variante(BaseModel):
     """Override de texto para un destino puntual (cross-post POSSE).
 
@@ -84,6 +115,8 @@ class Pieza(BaseModel):
     # Cross-post: overrides de texto por destino (ej. {"twitter": {cuerpo, hashtags}}).
     variantes: dict[str, Variante] = {}
     publicado: dict[str, DestinoPublicado] = {}
+    # Métricas por plataforma (registro manual; ver `posse metrics` / `posse report`).
+    metricas: dict[str, Metrica] = {}
 
     @field_validator("id", "titulo", "cuerpo")
     @classmethod

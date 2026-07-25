@@ -236,6 +236,46 @@ def comment(pieza: str, texto: str) -> None:
     typer.echo(f"OK: comentario publicado ({urn})")
 
 
+@app.command()
+def metrics(
+    pieza: str,
+    plataforma: str = typer.Argument("linkedin", help="linkedin | mastodon | twitter"),
+    impresiones: int = typer.Option(None, "--impresiones"),
+    reacciones: int = typer.Option(None, "--reacciones"),
+    comentarios: int = typer.Option(None, "--comentarios"),
+    clics: int = typer.Option(None, "--clics"),
+    seguidores: int = typer.Option(None, "--seguidores"),
+    fecha: str = typer.Option(None, "--fecha", help="YYYY-MM-DD del registro (default: hoy)"),
+) -> None:
+    """Registra a mano las métricas de una pieza (copiás los números de 'Ver analíticas')."""
+    import datetime as dt
+
+    from posse import content_store
+
+    valores = {
+        "impresiones": impresiones, "reacciones": reacciones,
+        "comentarios": comentarios, "clics": clics, "seguidores": seguidores,
+    }
+    valores = {k: v for k, v in valores.items() if v is not None}
+    if not valores:
+        raise typer.BadParameter("pasá al menos una métrica (ej. --impresiones 1200 --comentarios 3)")
+    content_store.set_metricas(
+        pieza, plataforma, fecha=fecha or dt.date.today().isoformat(), valores=valores
+    )
+    typer.echo(f"OK: métricas de {plataforma} guardadas en {pieza}: {valores}")
+
+
+@app.command()
+def report(
+    plataforma: str = typer.Argument("linkedin", help="linkedin | mastodon | twitter"),
+) -> None:
+    """Muestra qué piezas/pilares rinden, a partir de las métricas cargadas con `posse metrics`."""
+    from posse import report as report_mod
+    from posse.config import get_settings
+
+    typer.echo(report_mod.render(get_settings().content_dir, plataforma))
+
+
 @app.command("publish-approved")
 def publish_approved() -> None:
     """Publica todas las piezas 'approved' del content_dir (lo usa el workflow del label)."""

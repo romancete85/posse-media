@@ -85,3 +85,10 @@ Objetivo: **consistencia** para trabajar el algoritmo, ganar visualizaciones y c
 
 - Impresiones · tasa de comentarios · seguidores nuevos · clics al comentario.
 - **Qué pilar/formato/tema rinde → doblar la apuesta.** Iterar mensual.
+- **Registro:** la API de analytics de LinkedIn es **partner-gated** para perfiles personales (no hay
+  lectura self-serve — ver `docs/AUTO-PUBLISH.md`). Se copian los números de *"Ver analíticas"* del post:
+  ```bash
+  posse metrics content/<pieza>.yaml --impresiones N --reacciones N --comentarios N --clics N
+  posse report   # ordena por impresiones + engagement rate por pilar
+  ```
+  Quedan versionados en la pieza; el reporte te dice dónde doblar la apuesta.
