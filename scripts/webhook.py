@@ -44,8 +44,8 @@ TOKEN = os.environ.get("POSSE_WEBHOOK_TOKEN", "")
 # Sync git: el guest publica desde su content/ y debe reflejar el estado de vuelta al origin.
 REPO_DIR = os.environ.get("POSSE_REPO_DIR", str(Path(__file__).resolve().parent.parent))
 GIT_SYNC = os.environ.get("POSSE_GIT_SYNC", "").strip().lower() in ("1", "true", "yes")
-# Identidad del commit de estado (no depende de git config global del guest).
-_GIT_AUTHOR = ("posse-runner", "posse@homelab.local")
+# Identidad del commit de estado (no depende de git config del guest; alineada a la del CT 116).
+_GIT_AUTHOR = ("posse-runner (CT 116)", "romanfandrich@gmail.com")
 
 
 def _git(args: list[str], timeout: float = 90.0) -> tuple[bool, str]:
