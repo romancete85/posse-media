@@ -60,6 +60,17 @@ va como **link al artifact en un comentario** (patrón actual). Para animación 
 2. **LinkedIn Videos API**: `register upload` de video + upload (chunked) + referencia en el post — más compleja que la Images API.
 El `gen-image`/diagrama estático + link interactivo cubre el caso hoy; el video es un proyecto dedicado.
 
+### 🎯 Cadencia de contenido (COMPROMISO recurrente)
+**Publicar en LinkedIn: 1/semana firme → ramp a 2/semana.** Foco **pilar A** (Cloud/DevOps/Seguridad),
+contenido **real** basado en proyectos propios (nunca clientes). Estrategia completa, backlog y checklist
+semanal en **`docs/ESTRATEGIA-CONTENIDO.md`**. Reminder automático en el calendario (martes; jueves al rampear).
+
+**Checklist semanal (mínimo):**
+- [ ] Elegir tema del backlog + generar draft (`posse draft`/`ideas`).
+- [ ] Refinar + diagrama si aplica + `posse publish` + link en el 1er comentario.
+- [ ] Responder comentarios (1ª hora) + comentar en 3–5 posts del nicho.
+- [ ] (Al rampear) 2º post de la semana.
+
 ### Frente — Sitio de diagramas self-hosted ✅ construido · deploy = operador
 Sitio estático (Caddy) con los diagramas interactivos/animados de la serie, en `site/`. Se expone por
 **Cloudflare Tunnel** (CT 200) → link **propio y permanente** (`https://diagramas.<dominio>/...`), sin
