@@ -165,13 +165,65 @@ def preview(pieza: str) -> None:
 
 
 @app.command()
-def publish(pieza: str) -> None:
-    """Publica una pieza approved (idempotente)."""
+def publish(
+    pieza: str,
+    destino: list[str] = typer.Option(None, "--destino", help="Publicar solo en estos destinos (ej. --destino mastodon)"),
+) -> None:
+    """Publica una pieza approved en sus destinos (idempotente). --destino filtra."""
     from posse import logging_conf, publisher
 
     logging_conf.setup()
-    publisher.publish(pieza)
+    publisher.publish(pieza, destinos_filtro=destino or None)
     typer.echo(f"OK: publish de {pieza} finalizado.")
+
+
+@app.command("publish-due")
+def publish_due(
+    dry_run: bool = typer.Option(False, "--dry-run", help="Listar qué se publicaría, sin publicar"),
+) -> None:
+    """Publica las piezas 'approved' cuya fecha `programado` ya llegó (auto-publish; lo corre n8n/cron)."""
+    from posse import logging_conf, publisher
+
+    logging_conf.setup()
+    ids = publisher.publish_due(dry_run=dry_run)
+    prefijo = "[dry-run] " if dry_run else ""
+    typer.echo(f"OK: {prefijo}{len(ids)} pieza(s): {', '.join(ids) or '(ninguna)'}")
+
+
+@app.command("token-status")
+def token_status() -> None:
+    """Muestra si el token de LinkedIn sigue vigente y cuántos días le quedan (para el cron)."""
+    import datetime as dt
+
+    from posse.auth.token_store import get_token_store
+
+    bundle = get_token_store().load()
+    if bundle is None:
+        typer.echo("⚠️  no hay tokens guardados; corré `posse auth`.")
+        raise typer.Exit(code=1)
+    expira = dt.datetime.fromisoformat(bundle.access_expires_at)
+    ahora = dt.datetime.now(dt.timezone.utc)
+    dias = (expira - ahora).days
+    if dias < 0:
+        typer.echo(f"❌ token VENCIDO ({bundle.access_expires_at}); corré `posse auth` de nuevo.")
+        raise typer.Exit(code=1)
+    icono = "✅" if dias > 7 else "⚠️"
+    typer.echo(f"{icono} token válido, {dias} día(s) restantes (expira {bundle.access_expires_at}).")
+
+
+@app.command()
+def adapt(
+    pieza: str,
+    destino: str = typer.Argument(..., help="mastodon | twitter"),
+    model: str = typer.Option(None, "--model", help="Override del modelo"),
+) -> None:
+    """Genera con IA la variante corta del post para otra red (Mastodon/X) y la guarda como draft."""
+    from posse import logging_conf
+    from posse.generators import adapt as adapt_mod
+
+    logging_conf.setup()
+    out = adapt_mod.adapt_to_file(pieza, destino, settings=_settings_con_modelo(model))
+    typer.echo(f"OK: variante '{destino}' ({len(out.cuerpo)} chars) guardada en {pieza}:\n\n{out.cuerpo}")
 
 
 @app.command()

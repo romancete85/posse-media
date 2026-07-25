@@ -18,7 +18,7 @@ from posse.auth import oauth
 from posse.auth.token_store import TokenBundle, TokenStore, get_token_store
 from posse.config import Settings, get_settings
 from posse.models import Estado
-from posse.platforms import get_publisher
+from posse.platforms import get_publisher, necesita_linkedin_bundle
 
 log = logging.getLogger("posse.publisher")
 
@@ -62,8 +62,13 @@ def publish(
     store: TokenStore | None = None,
     client=None,
     clock: Callable[[], dt.datetime] | None = None,
+    destinos_filtro: list[str] | None = None,
 ) -> None:
-    """Publica una pieza approved en sus destinos, idempotente."""
+    """Publica una pieza approved en sus destinos, idempotente.
+
+    `destinos_filtro`: si se pasa, solo publica en esos destinos (ej. `--destino mastodon`).
+    El token de LinkedIn se carga solo si algún destino pendiente lo necesita.
+    """
     settings = settings or get_settings()
     store = store or get_token_store(settings)
     clock = clock or _utcnow
@@ -75,23 +80,21 @@ def publish(
         )
 
     pendientes = [d for d in pieza.destinos if not pieza.esta_publicado_en(d)]
+    if destinos_filtro is not None:
+        pendientes = [d for d in pendientes if d in destinos_filtro]
     if not pendientes:
-        log.info("pieza '%s': nada para publicar (todos los destinos ya publicados)", pieza.id)
+        log.info("pieza '%s': nada para publicar (destinos ya publicados o filtrados)", pieza.id)
         return
 
-    bundle = store.load()
-    if bundle is None:
-        raise RuntimeError("no hay tokens guardados; corre `posse auth` primero")
-    bundle = _ensure_fresh(bundle, settings, store, clock)
+    bundle = None
+    if necesita_linkedin_bundle(pendientes):
+        bundle = store.load()
+        if bundle is None:
+            raise RuntimeError("no hay tokens de LinkedIn guardados; corre `posse auth` primero")
+        bundle = _ensure_fresh(bundle, settings, store, clock)
 
     for destino in pendientes:
-        pub = get_publisher(
-            destino,
-            access_token=bundle.access_token,
-            person_urn=bundle.person_urn,
-            version=settings.linkedin_version,
-            client=client,
-        )
+        pub = get_publisher(destino, settings=settings, bundle=bundle, client=client)
         result = pub.publish(pieza)
         content_store.marcar_publicado(
             path, destino, fecha=result.fecha, url=result.url, post_id=result.post_id
@@ -154,4 +157,41 @@ def publish_approved(
         if content_store.load(path).estado is Estado.APPROVED:
             publish(path, settings=settings, store=store, client=client, clock=clock)
             ids.append(content_store.load(path).id)
+    return ids
+
+
+def publish_due(
+    *,
+    settings: Settings | None = None,
+    store: TokenStore | None = None,
+    client=None,
+    clock: Callable[[], dt.datetime] | None = None,
+    today: dt.date | None = None,
+    dry_run: bool = False,
+) -> list[str]:
+    """Publica las piezas 'approved' cuya fecha `programado` ya llegó (auto-publish).
+
+    Es lo que corre el cron / n8n a diario. Idempotente: las ya publicadas se saltan;
+    las sin `programado` o con fecha futura no se tocan. `dry_run` solo lista, no publica.
+    La fecha se compara contra `today` (default: hoy en UTC; el runner define la TZ del cron).
+    """
+    settings = settings or get_settings()
+    clock = clock or _utcnow
+    hoy = today or clock().date()
+
+    ids: list[str] = []
+    for path in sorted(Path(settings.content_dir).glob("*.yaml")):
+        pieza = content_store.load(path)
+        if pieza.estado is not Estado.APPROVED or not pieza.esta_programada_para(hoy):
+            continue
+        if all(pieza.esta_publicado_en(d) for d in pieza.destinos):
+            continue  # nada pendiente
+        if dry_run:
+            log.info("[dry-run] publicaría '%s' (programado %s)", pieza.id, pieza.programado)
+            ids.append(pieza.id)
+            continue
+        publish(path, settings=settings, store=store, client=client, clock=clock)
+        ids.append(pieza.id)
+    if not ids:
+        log.info("publish-due: nada para publicar hoy (%s)", hoy)
     return ids

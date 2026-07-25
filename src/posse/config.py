@@ -52,6 +52,17 @@ class Settings(BaseSettings):
     alt_backend: str = "gemini"
     ollama_vision_model: str = "llava:7b"
 
+    # Cross-post — Mastodon (token simple: Preferences > Development > New application, scope write:statuses+write:media)
+    mastodon_instance: str = ""          # ej. https://mastodon.social (sin barra final)
+    mastodon_access_token: str = ""
+    mastodon_max_chars: int = 500        # límite de la instancia (mastodon.social = 500)
+    # Cross-post — X/Twitter (API v2, tier PAGO). OAuth 1.0a user context.
+    twitter_api_key: str = ""            # consumer key
+    twitter_api_secret: str = ""         # consumer secret
+    twitter_access_token: str = ""
+    twitter_access_secret: str = ""
+    twitter_max_chars: int = 280
+
 
 @lru_cache
 def get_settings() -> Settings:

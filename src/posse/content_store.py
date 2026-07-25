@@ -59,6 +59,31 @@ def add_asset(path: str | Path, asset_path: str, alt: str | None = None) -> None
         _yaml_rt.dump(data, f)
 
 
+def set_variante(
+    path: str | Path,
+    destino: str,
+    *,
+    cuerpo: str,
+    hashtags: list[str] | None = None,
+) -> None:
+    """Escribe/actualiza variantes[destino] con el texto adaptado a esa red (cross-post).
+
+    Preserva comentarios/formato (ruamel round-trip). No cambia el estado de la pieza.
+    """
+    p = Path(path)
+    with p.open("r", encoding="utf-8") as f:
+        data = _yaml_rt.load(f)
+
+    variantes = data.setdefault("variantes", {})
+    destino_map = variantes.setdefault(destino, {})
+    destino_map["cuerpo"] = cuerpo
+    if hashtags is not None:
+        destino_map["hashtags"] = list(hashtags)
+
+    with p.open("w", encoding="utf-8") as f:
+        _yaml_rt.dump(data, f)
+
+
 def marcar_publicado(
     path: str | Path,
     plataforma: str,

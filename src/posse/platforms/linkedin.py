@@ -68,9 +68,10 @@ def _escape_commentary(texto: str) -> str:
 
 def _commentary(pieza: Pieza) -> str:
     """Texto del post = cuerpo (escapado) + hashtags al final (el '#' NO se escapa)."""
-    texto = _escape_commentary(pieza.cuerpo.rstrip())
-    if pieza.hashtags:
-        tags = " ".join(h if h.startswith("#") else f"#{h}" for h in pieza.hashtags)
+    cuerpo, hashtags = pieza.contenido_para("linkedin")
+    texto = _escape_commentary(cuerpo.rstrip())
+    if hashtags:
+        tags = " ".join(h if h.startswith("#") else f"#{h}" for h in hashtags)
         texto = f"{texto}\n\n{tags}"  # hashtags sin escapar: el '#' debe quedar para que funcionen
     return texto
 
