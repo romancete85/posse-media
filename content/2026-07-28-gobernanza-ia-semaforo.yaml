@@ -1,0 +1,41 @@
+# Serie "Homelab" · pieza 2 — gobernanza (semáforo + ACL). Sanitizada (sin IPs/tokens/VMIDs).
+id: 2026-07-28-gobernanza-ia-semaforo
+pilar: A
+estado: draft
+destinos: [linkedin]
+titulo: 'Gobernanza: cómo dejo que una IA opere mi infra sin romper nada'
+cuerpo: |
+  En el post anterior conté que una IA opera mi homelab. La pregunta que más me hicieron:
+  "¿y si borra algo?". 🔥
+
+  Buena pregunta. La respuesta es un semáforo. 🚦
+
+  Clasifico cada operación por su riesgo:
+
+  🟢 VERDE — read-only (leer estado, inventario). Sin efecto de estado → auto-aprobable.
+
+  🟡 AMARILLO — reversible (crear, arrancar, snapshots, editar RAM/CPU). Permitida, pero SOLO
+  dentro de un pool sandbox acotado.
+
+  🔴 ROJO — destructivo (borrar, rollback, restaurar, wipe de disco). SIEMPRE con confirmación
+  humana explícita + backup verificado antes. Nunca automático.
+
+  Pero el semáforo es la parte fácil. La clave está abajo:
+
+  👉 El permiso lo da la ACL de Proxmox (control técnico), NO el prompt (control blando).
+
+  ¿Por qué importa? Porque un error de prompt —o un intento de jailbreak— no puede exceder lo que
+  la ACL permite. La IA escribe solo en el pool sandbox; producción es read-only. Y nunca se
+  auto-otorga permisos: no toca sus propios roles.
+
+  Los prompts convencen. Las ACL obligan. Para operar infra con una IA, esa diferencia es todo.
+
+  📐 El modelo completo, en el diagrama de abajo (sanitizado). La versión interactiva, en los comentarios.
+
+  👇 ¿Vos le confiarías operaciones a una IA? ¿Hasta qué color del semáforo llegarías?
+assets:
+  - path: content/assets/diagrama-gobernanza.png
+    alt: "Semáforo de gobernanza: VERDE (read-only, auto-aprobable), AMARILLO (reversible, solo en el pool sandbox), ROJO (destructivo, gate humano + backup verificado). Barrera dura = ACL de Proxmox; la IA no se auto-otorga permisos."
+hashtags: [Proxmox, CloudSecurity, DevOps, IA, Homelab]
+publicado:
+  linkedin: { fecha: null, url: null, post_id: null }

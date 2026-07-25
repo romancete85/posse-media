@@ -1,0 +1,133 @@
+<title>Gobernanza de la IA — verde/amarillo/rojo</title>
+<style>
+  :root {
+    --ground: #eef1f4; --surface: #ffffff; --surface-2: #f6f8fa;
+    --ink: #1a2028; --muted: #6b7684; --hair: #dde3ea;
+    --green: #15803d; --green-bg: #e6f5ec;
+    --amber: #b7791f; --amber-bg: #fbf1dd;
+    --red: #c0392b; --red-bg: #fbe9e7;
+    --acl: #4f46e5; --acl-bg: #ebeafc;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0e131a; --surface: #161d26; --surface-2: #1c2530;
+      --ink: #e7edf3; --muted: #93a1b1; --hair: #26313d;
+      --green: #4ade80; --green-bg: #0f2a19;
+      --amber: #f0b429; --amber-bg: #2c2410;
+      --red: #f87171; --red-bg: #2c1615;
+      --acl: #8f8bf5; --acl-bg: #1e1d38;
+    }
+  }
+  :root[data-theme="light"] { --ground:#eef1f4;--surface:#fff;--surface-2:#f6f8fa;--ink:#1a2028;--muted:#6b7684;--hair:#dde3ea;--green:#15803d;--green-bg:#e6f5ec;--amber:#b7791f;--amber-bg:#fbf1dd;--red:#c0392b;--red-bg:#fbe9e7;--acl:#4f46e5;--acl-bg:#ebeafc; }
+  :root[data-theme="dark"] { --ground:#0e131a;--surface:#161d26;--surface-2:#1c2530;--ink:#e7edf3;--muted:#93a1b1;--hair:#26313d;--green:#4ade80;--green-bg:#0f2a19;--amber:#f0b429;--amber-bg:#2c2410;--red:#f87171;--red-bg:#2c1615;--acl:#8f8bf5;--acl-bg:#1e1d38; }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 28px 20px 40px; }
+  header { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 24px; justify-content: space-between; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  h1 { font-family: var(--font-mono); font-size: clamp(21px, 3.2vw, 30px); font-weight: 700; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+  h1 .chev { color: var(--acl); }
+  .badge { font-family: var(--font-mono); font-size: 11px; color: var(--green); border: 1px solid var(--green); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+
+  .rule { font-family: var(--font-mono); font-size: 14px; background: var(--acl-bg); border: 1px solid var(--acl); border-radius: 12px;
+    padding: 14px 16px; margin: 20px 0 22px; color: var(--ink); }
+  .rule b { color: var(--acl); }
+
+  .lanes { display: grid; gap: 14px; }
+  .lane { display: grid; grid-template-columns: 150px 1fr; gap: 0; border: 1px solid var(--hair); border-radius: 14px; overflow: hidden;
+    background: var(--surface); cursor: pointer; transition: transform .15s, box-shadow .15s; }
+  .lane:hover, .lane:focus-visible { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(15,25,40,.10); outline: none; }
+  .lane .light { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px 10px; }
+  .dot { width: 34px; height: 34px; border-radius: 50%; box-shadow: inset 0 -2px 6px rgba(0,0,0,.15); }
+  .lane .tag { font-family: var(--font-mono); font-weight: 700; font-size: 15px; letter-spacing: .04em; }
+  .lane .body { padding: 18px 20px; border-left: 1px solid var(--hair); }
+  .lane .kind { font-family: var(--font-mono); font-weight: 600; font-size: 15px; margin: 0 0 6px; }
+  .lane .ex { color: var(--muted); font-size: 13.5px; margin: 0 0 8px; }
+  .lane .out { font-size: 14px; }
+  .lane .out b { font-family: var(--font-mono); }
+
+  .green .light { background: var(--green-bg); } .green .dot { background: var(--green); } .green .tag { color: var(--green); } .green .out b { color: var(--green); }
+  .amber .light { background: var(--amber-bg); } .amber .dot { background: var(--amber); } .amber .tag { color: var(--amber); } .amber .out b { color: var(--amber); }
+  .red   .light { background: var(--red-bg); }   .red .dot { background: var(--red); }   .red .tag { color: var(--red); }   .red .out b { color: var(--red); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .lane:hover .dot { animation: pulse 1.1s ease-in-out infinite; }
+  }
+  @keyframes pulse { 50% { box-shadow: inset 0 -2px 6px rgba(0,0,0,.15), 0 0 0 6px color-mix(in srgb, currentColor 22%, transparent); } }
+  .green .dot { color: var(--green); } .amber .dot { color: var(--amber); } .red .dot { color: var(--red); }
+
+  .foot-note { margin-top: 22px; font-family: var(--font-mono); font-size: 13px; color: var(--ink); background: var(--surface-2);
+    border: 1px solid var(--hair); border-radius: 12px; padding: 14px 16px; }
+  .foot-note b { color: var(--red); }
+  .foot { margin-top: 16px; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+  @media (max-width: 520px) { .lane { grid-template-columns: 1fr; } .lane .body { border-left: none; border-top: 1px solid var(--hair); } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Homelab · serie 2 — gobernanza</p>
+      <h1><span class="chev">❯</span> Cómo dejo que una IA opere mi infra… sin romper nada</h1>
+    </div>
+    <span class="badge">✓ sanitizado</span>
+  </header>
+
+  <p class="rule">La regla de oro: <b>el permiso lo da la ACL de Proxmox</b> (control técnico),
+    <b>no el prompt</b>. Cada operación se clasifica con un semáforo. 👇 (tocá cada franja)</p>
+
+  <div class="lanes">
+    <div class="lane green" tabindex="0" role="button" data-id="green">
+      <div class="light"><span class="dot"></span><span class="tag">VERDE</span></div>
+      <div class="body">
+        <p class="kind">🟢 Read-only</p>
+        <p class="ex">Leer inventario, estado, storage (get_*). Sin efecto de estado.</p>
+        <p class="out"><b>Auto-aprobable</b> — sin riesgo, en cualquier scope.</p>
+      </div>
+    </div>
+
+    <div class="lane amber" tabindex="0" role="button" data-id="amber">
+      <div class="light"><span class="dot"></span><span class="tag">AMARILLO</span></div>
+      <div class="body">
+        <p class="kind">🟡 Reversible</p>
+        <p class="ex">Crear/arrancar/apagar, snapshots, editar RAM/CPU/tags (nada de disco/red).</p>
+        <p class="out">Permitido <b>solo dentro del pool sandbox</b> que autoriza la ACL.</p>
+      </div>
+    </div>
+
+    <div class="lane red" tabindex="0" role="button" data-id="red">
+      <div class="light"><span class="dot"></span><span class="tag">ROJO</span></div>
+      <div class="body">
+        <p class="kind">🔴 Destructivo</p>
+        <p class="ex">Borrar, rollback, restaurar sobre existente, wipe de disco.</p>
+        <p class="out"><b>Gate humano + backup verificado</b>, SIEMPRE. Nunca auto-aprobado.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot-note">🔒 Barrera dura = <b style="color:var(--acl)">ACL</b> (rol + scope, por <code>pveum</code>).
+    Un error de prompt <b>no puede exceder</b> lo que la ACL permite. La IA <b>nunca se auto-otorga permisos</b>.</p>
+
+  <p class="foot" id="foot">© Roman Fandrich · homelab · modelo de gobernanza (conceptual, sin datos sensibles)</p>
+</div>
+
+<script>
+  const DATA = {
+    green: "Lecturas (get_nodes, get_vms, get_storage…): no cambian estado → auto-aprobables en cualquier scope. La IA ve TODO el cluster, pero solo mira.",
+    amber: "Crear/arrancar/apagar, snapshots, editar RAM/CPU/tags/descripción. Reversibles. Solo dentro del pool sandbox que la ACL autoriza; producción sigue read-only (o power/config gateado).",
+    red: "delete, rollback_snapshot, restore sobre existente, wipe/resize-down de disco. SIEMPRE confirmación humana explícita + backup verificado ANTES. Nunca auto-aprobado, en ninguna etapa.",
+  };
+  const foot = document.getElementById('foot');
+  const base = foot.textContent;
+  document.querySelectorAll('.lane[data-id]').forEach(l => {
+    const id = l.getAttribute('data-id');
+    const show = () => { foot.textContent = DATA[id]; };
+    const reset = () => { foot.textContent = base; };
+    l.addEventListener('mouseenter', show);
+    l.addEventListener('mouseleave', reset);
+    l.addEventListener('click', show);
+    l.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(); } });
+  });
+</script>
