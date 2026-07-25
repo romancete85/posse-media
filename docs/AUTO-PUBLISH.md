@@ -36,21 +36,41 @@ detrás del túnel `n8n.sysdevops.cloudns.be`). Es alcanzable desde la LAN. Dos 
 > El **conector MCP** de claude.ai ("n8n") es aparte y pide OAuth interactivo; no hace falta para esto —
 > la REST API de n8n alcanza para crear el workflow (con la API key) o se arma a mano en la UI.
 
-**Opción 1 — Webhook** (n8n en Docker, posse en otro host):
-1. En el host donde vive posse, corré el webhook (dejalo como servicio):
-   ```bash
-   POSSE_WEBHOOK_TOKEN=<algo-random-largo> ./.venv/bin/python scripts/webhook.py --port 8790
-   ```
-2. En n8n: nodo **Schedule** (ej. diario 09:00 ART) → nodo **HTTP Request**:
-   - Method: `POST`
-   - URL: `http://<host-posse>:8790/publish-due`
-   - Header: `X-Posse-Token: <el mismo token>`
-   - (para probar sin publicar: URL `…/publish-due?dry_run=1`)
-3. Respuesta JSON: `{"published": ["2026-07-28-…"], "dry_run": false}`.
+### Deploy real (armado por proxmox-ai-ops)
+`posse` corre en su propio guest, disparado por n8n vía webhook:
 
-**Opción 2 — Directo** (n8n y posse en el mismo host):
-- nodo **Schedule** → nodo **Execute Command** (o **SSH**): `posse publish-due`
-- Más simple, sin webhook. Requiere que n8n pueda ejecutar el binario `posse`.
+| Pieza | Detalle |
+|---|---|
+| **Guest** | LXC **VMID 116 `posse-runner` · `192.168.100.171`** · pool `ai-managed` · Debian 13 · onboot=1 · unprivileged |
+| **Runtime** | `/opt/posse/.venv` (Python 3.13) · corre como usuario `posse` (no root) |
+| **Servicio** | `posse-webhook.service` (systemd, hardened) — sirve `8790` (publish) + `8791` (token-status) |
+| **Secreto** | `POSSE_WEBHOOK_TOKEN` en `/etc/posse/webhook.env` (`0640 root:posse`, **fuera del repo**) |
+| **Firewall** | nftables dropea `8790/8791` si el origen no es RFC1918 (**solo-LAN**) |
+| **Workflows n8n** | `posse-publish-due` (diario 09:00 ART → `POST .171:8790/publish-due` → ntfy) · `posse-token-check` (lunes 09:00 → `GET .171:8791/token-status` → avisa si < 7 días) |
+
+**Contrato de los endpoints** (ambos exigen header `X-Posse-Token`):
+```
+POST 8790 /publish-due[?dry_run=1]  -> {"published": [...ids...], "dry_run": bool}
+GET  8791 /token-status             -> {"valido": bool, "dias_restantes": int|null,
+                                        "expira": str|null, "mensaje": "token válido, N días restantes"}
+```
+El `8791` es **read-only** (rechaza POST con 405); el `8790` rechaza GET. Separados a propósito para que
+el firewall/n8n traten distinto lo que muta de lo que solo lee.
+
+### Pasos de deploy (humano — el código y la auth llevan secretos)
+En el guest `posse-runner` (después de que ai-ops dejó la infra lista):
+```bash
+# 1. copiar el código a /opt/posse (como root; ej. rsync/scp desde tu Mac o git clone con deploy key)
+# 2. instalar y permisos:
+sudo -u posse /opt/posse/.venv/bin/pip install /opt/posse
+posse-fixperms                       # helper que dejó ai-ops
+# 3. crear /opt/posse/.env con las claves de la app de LinkedIn (NO el token, ese lo genera `posse auth`)
+# 4. login OAuth de LinkedIn (una vez, abre navegador):
+sudo -u posse /opt/posse/.venv/bin/posse auth
+# 5. arrancar el webhook:
+systemctl start posse-webhook
+```
+Recién ahí activás los dos workflows en n8n (ai-ops los dejó **inactivos** para no fallar contra un puerto muerto).
 
 ### ⚠️ Límite del token de LinkedIn (importante)
 El token de LinkedIn **expira ~60 días** y la app **no emite refresh token** (no hay forma
@@ -60,8 +80,8 @@ re-autenticar a mano:
 posse token-status   # ✅/⚠️/❌ con los días restantes
 posse auth           # re-autenticar cuando queden pocos días (abre el navegador)
 ```
-Sugerencia: un segundo Schedule en n8n que corra `token-status` semanal y te avise (email/Telegram)
-cuando queden < 7 días.
+Ya está cubierto: el workflow **`posse-token-check`** (lunes 09:00) pega a `GET :8791/token-status` y
+te avisa por ntfy cuando queden < 7 días (o si no puede interpretar la respuesta).
 
 ---
 
