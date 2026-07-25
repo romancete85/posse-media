@@ -57,6 +57,23 @@ GET  8791 /token-status             -> {"valido": bool, "dias_restantes": int|nu
 El `8791` es **read-only** (rechaza POST con 405); el `8790` rechaza GET. Separados a propósito para que
 el firewall/n8n traten distinto lo que muta de lo que solo lee.
 
+### Sync de contenido (git) — por qué y qué necesita
+El guest publica desde **su** `content/` y `publish-due` **reescribe** cada pieza (estado→`published` +
+`post_id`). Si solo hiciéramos `pull`, el árbol quedaría sucio (rompe el próximo `pull --ff-only`) y ese
+estado no volvería al origin → riesgo de **republicar** (post duplicado). Por eso, con `POSSE_GIT_SYNC=1`
+el webhook hace: **`git pull --ff-only` → publicar → `git commit`+`git push` del estado**. Así el git
+queda como única fuente de verdad e idempotente en Mac y guest. Si el `pull` falla, **no publica** (te
+alerta por ntfy en vez de usar contenido viejo).
+
+**Requisitos de infra en el guest (para ai-ops):**
+- Env del servicio (`/etc/posse/webhook.env`): `POSSE_GIT_SYNC=1`, `POSSE_REPO_DIR=/opt/posse`.
+- **Deploy key con WRITE** para el repo `posse-media`, y el `remote` sin el alias SSH del Mac
+  (ej. `git@github.com:romancete85/posse-media.git`), para que el `git push` funcione headless.
+- Hardening systemd: git escribe `/opt/posse/.git` (OK con `ProtectSystem=full`) y **lee el deploy key**
+  → con `ProtectHome` activo, poné la key fuera de `/home` (ej. `/etc/posse/deploy_key`) y apuntá
+  `GIT_SSH_COMMAND=ssh -i /etc/posse/deploy_key -o IdentitiesOnly=yes` en el env del servicio.
+- El commit usa identidad propia (`-c user.name/email`), no depende del git config global del guest.
+
 ### Pasos de deploy (humano — el código y la auth llevan secretos)
 En el guest `posse-runner` (después de que ai-ops dejó la infra lista):
 ```bash

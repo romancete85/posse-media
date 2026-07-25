@@ -11,8 +11,13 @@ Sin dependencias extra (http.server de stdlib).
 Corré:  POSSE_WEBHOOK_TOKEN=... ./.venv/bin/python scripts/webhook.py --port 8790
 (en el homelab lo levanta el servicio systemd `posse-webhook`, con el token en /etc/posse/webhook.env)
 
+Sync de contenido (POSSE_GIT_SYNC=1): antes de publicar hace `git pull --ff-only` (trae lo aprobado)
+y después del publish commitea+pushea el estado (published + post_id) de vuelta al repo. Así el git es
+la única fuente de verdad e idempotente en todos lados (evita republicar). Requiere en el guest: un
+deploy key con WRITE + `git push` funcionando (remote sin alias SSH del Mac). Off por defecto (dev/tests).
+
 Contrato de respuestas (JSON):
-  POST /publish-due[?dry_run=1] -> {"published": [...ids...], "dry_run": bool}
+  POST /publish-due[?dry_run=1] -> {"published": [...ids...], "dry_run": bool, "git_push"?: {...}}
   GET  /token-status            -> {"valido": bool, "dias_restantes": int|null,
                                     "expira": str|null, "mensaje": str}
 """
@@ -24,8 +29,10 @@ import datetime as dt
 import json
 import logging
 import os
+import subprocess
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
 from posse import logging_conf, publisher
 from posse.auth.token_store import get_token_store
@@ -33,6 +40,46 @@ from posse.auth.token_store import get_token_store
 log = logging.getLogger("posse.webhook")
 
 TOKEN = os.environ.get("POSSE_WEBHOOK_TOKEN", "")
+
+# Sync git: el guest publica desde su content/ y debe reflejar el estado de vuelta al origin.
+REPO_DIR = os.environ.get("POSSE_REPO_DIR", str(Path(__file__).resolve().parent.parent))
+GIT_SYNC = os.environ.get("POSSE_GIT_SYNC", "").strip().lower() in ("1", "true", "yes")
+# Identidad del commit de estado (no depende de git config global del guest).
+_GIT_AUTHOR = ("posse-runner", "posse@homelab.local")
+
+
+def _git(args: list[str], timeout: float = 90.0) -> tuple[bool, str]:
+    """Corre `git -C REPO_DIR <args>`. Devuelve (ok, salida)."""
+    try:
+        r = subprocess.run(  # noqa: S603 — args fijos, sin shell
+            ["git", "-C", REPO_DIR, *args],  # noqa: S607
+            capture_output=True, text=True, timeout=timeout,
+        )
+    except (OSError, subprocess.SubprocessError) as e:
+        return False, f"git {' '.join(args)}: {e}"
+    return r.returncode == 0, (r.stdout + r.stderr).strip()
+
+
+def _git_pull() -> tuple[bool, str]:
+    """Fast-forward only: trae lo aprobado sin crear merges ni pisar estado local sin commitear."""
+    return _git(["pull", "--ff-only"])
+
+
+def _git_push_estado(ids: list[str]) -> dict:
+    """Commitea el estado (content/) reescrito por el publish y lo pushea. Best-effort, siempre reporta."""
+    add_ok, add_out = _git(["add", "content"])
+    if not add_ok:
+        return {"ok": False, "paso": "add", "detalle": add_out}
+    name, email = _GIT_AUTHOR
+    msg = f"chore(auto-publish): estado de {len(ids)} pieza(s): {', '.join(ids)}"
+    commit_ok, commit_out = _git(
+        ["-c", f"user.name={name}", "-c", f"user.email={email}", "commit", "-m", msg]
+    )
+    if not commit_ok:
+        # "nothing to commit" no es error (raro tras publicar, pero seguro): no hay nada que pushear.
+        return {"ok": True, "paso": "commit", "detalle": "sin cambios para commitear"}
+    push_ok, push_out = _git(["push"])
+    return {"ok": push_ok, "paso": "push", "detalle": push_out}
 
 
 def _token_status() -> dict:
@@ -84,9 +131,24 @@ class PublishHandler(_Base):
             return
         dry = "dry_run=1" in (self.path.split("?", 1)[1] if "?" in self.path else "")
         try:
+            # 1. traer lo aprobado. Si el pull falla, NO publico (evito publicar contenido viejo/en conflicto).
+            if GIT_SYNC and not dry:
+                pull_ok, pull_out = _git_pull()
+                if not pull_ok:
+                    log.error("webhook: git pull falló, no publico: %s", pull_out)
+                    self._json(500, {"error": "git pull falló; no publico para no usar contenido viejo",
+                                     "git": pull_out})
+                    return
+            # 2. publicar.
             ids = publisher.publish_due(dry_run=dry)
             log.info("webhook: publish-due -> %s", ids or "(ninguna)")
-            self._json(200, {"published": ids, "dry_run": dry})
+            resp = {"published": ids, "dry_run": dry}
+            # 3. devolver el estado (published + post_id) al repo, para que el origin sea idempotente.
+            if GIT_SYNC and not dry and ids:
+                resp["git_push"] = _git_push_estado(ids)
+                if not resp["git_push"]["ok"]:
+                    log.error("webhook: push del estado falló: %s", resp["git_push"]["detalle"])
+            self._json(200, resp)
         except Exception as e:  # noqa: BLE001 — devolver el error a n8n sin tumbar el server
             log.exception("webhook: publish-due falló")
             self._json(500, {"error": str(e)})

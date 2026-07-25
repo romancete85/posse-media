@@ -78,3 +78,36 @@ def test_publish_due_endpoint(monkeypatch):
         assert llamado["dry"] is True
     finally:
         srv.shutdown()
+
+
+def test_git_sync_orden_pull_publish_push(monkeypatch):
+    monkeypatch.setattr(webhook, "TOKEN", "SECRET")
+    monkeypatch.setattr(webhook, "GIT_SYNC", True)
+    orden = []
+    monkeypatch.setattr(webhook, "_git_pull", lambda: (orden.append("pull"), (True, "ok"))[1])
+    monkeypatch.setattr(webhook.publisher, "publish_due", lambda dry_run=False: (orden.append("pub"), ["id1"])[1])
+    monkeypatch.setattr(webhook, "_git_push_estado", lambda ids: (orden.append("push"), {"ok": True, "detalle": "ok"})[1])
+    srv, port = _serve(webhook.PublishHandler)
+    try:
+        r = httpx.post(f"http://127.0.0.1:{port}/publish-due", headers={"X-Posse-Token": "SECRET"})
+        assert r.status_code == 200
+        body = r.json()
+        assert body["published"] == ["id1"] and body["git_push"]["ok"] is True
+        assert orden == ["pull", "pub", "push"]  # pull ANTES de publicar, push DESPUÉS
+    finally:
+        srv.shutdown()
+
+
+def test_git_sync_aborta_si_pull_falla(monkeypatch):
+    monkeypatch.setattr(webhook, "TOKEN", "SECRET")
+    monkeypatch.setattr(webhook, "GIT_SYNC", True)
+    monkeypatch.setattr(webhook, "_git_pull", lambda: (False, "conflicto"))
+    publicado = []
+    monkeypatch.setattr(webhook.publisher, "publish_due", lambda dry_run=False: publicado.append(1))
+    srv, port = _serve(webhook.PublishHandler)
+    try:
+        r = httpx.post(f"http://127.0.0.1:{port}/publish-due", headers={"X-Posse-Token": "SECRET"})
+        assert r.status_code == 500 and "git pull" in r.json()["error"]
+        assert publicado == []  # NO publicó (contenido viejo/en conflicto)
+    finally:
+        srv.shutdown()
