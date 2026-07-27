@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """posse-setenv — actualiza claves permitidas de /opt/posse/.env desde stdin (guest CT 116).
 
 Uso (en el guest):  printf 'LINKEDIN_CLIENT_ID=xxx\\nLINKEDIN_CLIENT_SECRET=yyy\\n' | posse-setenv
