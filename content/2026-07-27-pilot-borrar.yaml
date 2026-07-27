@@ -1,7 +1,7 @@
 # PIEZA DE PRUEBA — piloto de-riesgo del auto-publish. Se borra en LinkedIn y del repo apenas se valida.
 id: 2026-07-27-pilot-borrar
 pilar: A
-estado: approved
+estado: published
 programado: 2026-07-27   # hoy: para que publish-due la tome en el piloto
 destinos: [linkedin]
 titulo: 'PRUEBA — borrar'
@@ -12,8 +12,10 @@ cuerpo: |
 
   Nada que ver acá, sigan de largo 🙂
 assets:
-  - path: content/assets/diagrama-gobernanza.png
-    alt: "Imagen de prueba del pipeline (diagrama de gobernanza)."
+- path: content/assets/diagrama-gobernanza.png
+  alt: "Imagen de prueba del pipeline (diagrama de gobernanza)."
 hashtags: [test]
 publicado:
-  linkedin: { fecha: null, url: null, post_id: null }
+  linkedin: {fecha: '2026-07-27T17:45:35.404345+00:00', url: 
+      https://www.linkedin.com/feed/update/urn:li:share:7487563853929820161, 
+      post_id: urn:li:share:7487563853929820161}
