@@ -1,7 +1,8 @@
 # Serie "Homelab" · pieza 2 — gobernanza (semáforo + ACL). Sanitizada (sin IPs/tokens/VMIDs).
 id: 2026-07-28-gobernanza-ia-semaforo
 pilar: A
-estado: draft
+estado: approved
+programado: 2026-07-28   # auto-publish: el guest la publica el martes 09:00 ART
 destinos: [linkedin]
 titulo: 'Gobernanza: cómo dejo que una IA opere mi infra sin romper nada'
 cuerpo: |
