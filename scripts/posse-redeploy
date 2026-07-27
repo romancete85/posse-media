@@ -1,0 +1,79 @@
+#!/bin/sh
+# posse-redeploy — baja el codigo nuevo del repo y reinicia el webhook. Idempotente.
+#
+# El CONTENIDO (content/*.yaml) NO necesita esto: el propio webhook hace `git pull --ff-only`
+# antes de cada publish. Esto es para el CODIGO (src/, scripts/), que baja con ese pull pero
+# sigue corriendo el viejo en memoria hasta que el servicio se reinicie.
+#
+# Uso:
+#   posse-redeploy            reinicia solo si el pull trajo commits nuevos
+#   posse-redeploy --force    reinicia igual (util tras editar a mano en el guest)
+set -eu
+
+REPO=/opt/posse
+UNIT=posse-webhook
+ENVFILE=/etc/posse/webhook.env
+FORCE=0
+[ "${1:-}" = "--force" ] && FORCE=1
+
+[ "$(id -u)" -eq 0 ] || { echo "posse-redeploy: correr como root" >&2; exit 1; }
+
+# El deploy key se usa via GIT_SSH_COMMAND, que vive en el EnvironmentFile del servicio
+# (unica fuente de verdad, no se duplica aca). OJO: systemd le saca las comillas al cargarlo;
+# leyendolo a mano hay que sacarlas, o git intenta ejecutar un binario llamado '"ssh'.
+GSC=$(sed -n 's/^GIT_SSH_COMMAND=//p' "$ENVFILE")
+GSC=$(printf '%s' "$GSC" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'\$//")
+[ -n "$GSC" ] || { echo "posse-redeploy: falta GIT_SSH_COMMAND en $ENVFILE" >&2; exit 1; }
+
+# git SIEMPRE como 'posse': corriendolo como root, los archivos que baje el pull quedarian
+# root:root y el servicio (que corre como posse) no podria reescribir el estado de content/.
+# Es la misma razon de ser de posse-fixperms.
+gitp() {
+  runuser -u posse -- env HOME="$REPO" GIT_SSH_COMMAND="$GSC" git -C "$REPO" "$@"
+}
+
+ANTES=$(gitp rev-parse HEAD)
+echo "posse-redeploy: HEAD antes   $ANTES"
+
+if ! OUT=$(gitp pull --ff-only 2>&1); then
+  echo "$OUT" >&2
+  echo "posse-redeploy: el pull FALLO (no fast-forward, o hay cambios locales sin commitear)." >&2
+  echo "posse-redeploy: NO se reinicio nada; sigue corriendo el codigo anterior." >&2
+  exit 1
+fi
+echo "$OUT"
+
+DESPUES=$(gitp rev-parse HEAD)
+echo "posse-redeploy: HEAD despues $DESPUES"
+
+if [ "$ANTES" = "$DESPUES" ] && [ "$FORCE" -eq 0 ]; then
+  echo "posse-redeploy: sin commits nuevos; no se reinicia (--force para forzar igual)."
+  exit 0
+fi
+
+# La install es EDITABLE (pip install -e): los cambios de src/ los toma el proceso al reiniciar,
+# sin reinstalar nada. Solo pyproject.toml (dependencias, entry points, metadata) obliga a rehacerla.
+if [ "$ANTES" != "$DESPUES" ] && gitp diff --name-only "$ANTES" "$DESPUES" | grep -qx 'pyproject.toml'; then
+  echo "posse-redeploy: cambio pyproject.toml -> pip install -e"
+  runuser -u posse -- env HOME="$REPO" "$REPO/.venv/bin/pip" install -q -e "$REPO"
+fi
+
+# Drift de este mismo script. NO se instala como symlink al repo —a diferencia de posse-setenv—
+# porque es el que corre el `git pull` que lo sobrescribiria, y sh lee el script mientras lo ejecuta.
+# En vez de eso: copia + este chequeo, que avisa cuando la version del repo cambio.
+YO=$(readlink -f "$0")
+EN_REPO="$REPO/scripts/posse-redeploy"
+if [ -f "$EN_REPO" ] && ! cmp -s "$YO" "$EN_REPO"; then
+  echo "posse-redeploy: AVISO — $EN_REPO difiere de $YO."
+  echo "posse-redeploy: actualizalo con:  install -m 0750 $EN_REPO $YO"
+fi
+
+systemctl restart "$UNIT"
+sleep 1
+if systemctl is-active --quiet "$UNIT"; then
+  echo "posse-redeploy: OK — $UNIT active en $DESPUES"
+else
+  echo "posse-redeploy: el servicio NO levanto tras el restart:" >&2
+  systemctl status "$UNIT" --no-pager -n 20 >&2 || true
+  exit 1
+fi
