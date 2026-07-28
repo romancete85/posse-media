@@ -1,0 +1,33 @@
+# Serie "Homelab" · pieza 3 — backup/DR off-box. Sanitizada (sin IPs/VMIDs/endpoints).
+id: 2026-08-04-ha-no-es-backup
+pilar: A
+estado: draft
+destinos: [linkedin]
+titulo: 'HA no es backup: por qué NO clustericé mi homelab'
+cuerpo: |
+  Todos quieren clusterizar el homelab para tener alta disponibilidad. Yo hice lo contrario a propósito. 🧯
+
+  Un cluster te da HA: si se muere un nodo, otro toma la posta. Suena bien. Pero HA no te salva de un
+  rm -rf, de un update que rompe todo, de ransomware, ni de un borrado con el dedo gordo.
+
+  De eso te salva una sola cosa: un restore.
+
+  Por eso mi homelab son 2 nodos standalone (sin cluster) + Proxmox Backup Server corriendo en OTRO
+  nodo. Backup off-box: si se quema el de producción, los backups viven. La regla 3-2-1, versión casera.
+
+  ¿Y el detalle que casi nadie chequea? Un backup NO probado no es un backup. Lo validé restaurando de
+  verdad: migré un guest entero por backup y restore. Si nunca restauraste, no tenés un backup: tenés
+  una esperanza.
+
+  📐 Arriba, la matriz de qué te salva de qué: HA cubre un caso; el backup off-box y probado, todos.
+
+  🔗 Es el "backup verificado" que exigía el semáforo ROJO del post anterior: la gobernanza lo promete,
+  acá está qué es.
+
+  👇 ¿Tenés backups… o tenés backups PROBADOS? ¿Cuándo fue tu último restore de prueba?
+assets:
+  - path: content/assets/diagrama-backup-dr.png
+    alt: "Matriz HA vs Backup: un cluster/HA solo salva de que se muera un nodo; un backup off-box y probado salva también de borrado por error, updates que rompen, ransomware e incendio del sitio. Homelab: 2 nodos standalone + PBS off-box + restores probados (regla 3-2-1)."
+hashtags: [Proxmox, DevOps, CloudSecurity, DisasterRecovery, Homelab]
+publicado:
+  linkedin: { fecha: null, url: null, post_id: null }

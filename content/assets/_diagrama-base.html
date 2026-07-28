@@ -1,0 +1,91 @@
+<!-- TEMPLATE base de diagramas de la serie. Copiá este archivo para arrancar uno nuevo.
+     Es un "fragmento" (sin <html>/<head>/<body>): sirve para artifact interactivo Y para render a PNG.
+     Fuentes CALIBRADAS para el feed mobile de LinkedIn (se ve a ~504px de ancho): body 17px, no 14.
+     Renderizá con:  posse-render <este>.html <out>.png --preset square --width 960
+     Rellená: eyebrow, h1, badge, el bloque .canvas, .foot-note y el DATA del script. -->
+<title>Diagrama — título</title>
+<style>
+  :root {
+    --ground: #eef1f4; --surface: #ffffff; --surface-2: #f6f8fa;
+    --ink: #1a2028; --muted: #5c6774; --hair: #dde3ea; --accent: #4f46e5; --accent-bg: #ebeafc;
+    --ok: #15803d; --ok-bg: #e6f5ec; --warn: #b7791f; --warn-bg: #fbf1dd; --bad: #c0392b; --bad-bg: #fbe9e7;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0e131a; --surface: #161d26; --surface-2: #1c2530;
+      --ink: #e7edf3; --muted: #97a4b2; --hair: #26313d; --accent: #8f8bf5; --accent-bg: #1e1d38;
+      --ok: #4ade80; --ok-bg: #0f2a19; --warn: #f0b429; --warn-bg: #2c2410; --bad: #f87171; --bad-bg: #2c1615;
+    }
+  }
+  :root[data-theme="light"] { --ground:#eef1f4;--surface:#fff;--surface-2:#f6f8fa;--ink:#1a2028;--muted:#5c6774;--hair:#dde3ea;--accent:#4f46e5;--accent-bg:#ebeafc;--ok:#15803d;--ok-bg:#e6f5ec;--warn:#b7791f;--warn-bg:#fbf1dd;--bad:#c0392b;--bad-bg:#fbe9e7; }
+  :root[data-theme="dark"] { --ground:#0e131a;--surface:#161d26;--surface-2:#1c2530;--ink:#e7edf3;--muted:#97a4b2;--hair:#26313d;--accent:#8f8bf5;--accent-bg:#1e1d38;--ok:#4ade80;--ok-bg:#0f2a19;--warn:#f0b429;--warn-bg:#2c2410;--bad:#f87171;--bad-bg:#2c1615; }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased; }
+  /* max-width acotado + fuentes grandes = legible cuando LinkedIn lo encoge a ~504px */
+  .wrap { max-width: 900px; margin: 0 auto; padding: 30px 26px 34px; }
+
+  .eyebrow { font-family: var(--font-mono); font-size: 15px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 8px; }
+  h1 { font-family: var(--font-mono); font-size: clamp(28px, 4.4vw, 40px); font-weight: 700; margin: 0;
+    letter-spacing: -.01em; line-height: 1.1; text-wrap: balance; }
+  h1 .chev { color: var(--accent); }
+  header { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 22px; justify-content: space-between; }
+  .badge { font-family: var(--font-mono); font-size: 14px; color: var(--ok); border: 1.5px solid var(--ok);
+    border-radius: 999px; padding: 5px 12px; white-space: nowrap; }
+
+  .rule { font-family: var(--font-mono); font-size: 17px; line-height: 1.5; background: var(--accent-bg);
+    border: 1.5px solid var(--accent); border-radius: 12px; padding: 15px 17px; margin: 22px 0; color: var(--ink); }
+  .rule b { color: var(--accent); }
+
+  /* Slot de contenido: rellenalo con lo tuyo (lanes, matriz, flujo…). */
+  .canvas { display: grid; gap: 15px; }
+
+  .card { background: var(--surface); border: 1px solid var(--hair); border-radius: 14px; padding: 18px 20px; }
+  .card .kind { font-family: var(--font-mono); font-weight: 700; font-size: 18px; margin: 0 0 6px; }
+  .card .ex { color: var(--muted); font-size: 16px; line-height: 1.45; margin: 0 0 8px; }
+  .card .out { font-size: 17px; line-height: 1.45; }
+  .card .out b { font-family: var(--font-mono); }
+
+  .foot-note { margin-top: 22px; font-family: var(--font-mono); font-size: 16px; line-height: 1.5; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--hair); border-radius: 12px; padding: 15px 17px; }
+  .foot-note b { color: var(--bad); }
+  /* .foot = panel interactivo; el render lo oculta (CAPTURE_CSS). */
+  .foot { margin-top: 16px; font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Homelab · serie N — tema</p>
+      <h1><span class="chev">❯</span> Título del diagrama</h1>
+    </div>
+    <span class="badge">✓ sanitizado</span>
+  </header>
+
+  <p class="rule">La idea central en una línea, con <b>lo clave resaltado</b>.</p>
+
+  <div class="canvas">
+    <div class="card"><p class="kind">Bloque</p><p class="ex">Descripción.</p><p class="out"><b>Conclusión</b></p></div>
+  </div>
+
+  <p class="foot-note">🔒 Nota dura / regla de oro al pie.</p>
+  <p class="foot" id="foot">© Roman Fandrich · homelab · diagrama conceptual (sin datos sensibles)</p>
+</div>
+
+<script>
+  // Interactivo (solo en el artifact; el PNG lo ignora): actualiza el pie al tocar cada bloque.
+  const DATA = { /* id: "texto detallado" */ };
+  const foot = document.getElementById('foot');
+  const base = foot ? foot.textContent : '';
+  document.querySelectorAll('[data-id]').forEach(el => {
+    const id = el.getAttribute('data-id');
+    const show = () => { if (DATA[id]) foot.textContent = DATA[id]; };
+    el.addEventListener('mouseenter', show);
+    el.addEventListener('mouseleave', () => { foot.textContent = base; });
+    el.addEventListener('click', show);
+  });
+</script>

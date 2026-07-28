@@ -1,0 +1,85 @@
+<title>HA no es backup — qué te salva de qué</title>
+<style>
+  :root {
+    --ground: #eef1f4; --surface: #ffffff; --surface-2: #f6f8fa;
+    --ink: #1a2028; --muted: #5c6774; --hair: #dde3ea; --accent: #4f46e5; --accent-bg: #ebeafc;
+    --ok: #15803d; --ok-bg: #e6f5ec; --bad: #c0392b; --bad-bg: #fbe9e7;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ground:#0e131a;--surface:#161d26;--surface-2:#1c2530;--ink:#e7edf3;--muted:#97a4b2;--hair:#26313d;
+      --accent:#8f8bf5;--accent-bg:#1e1d38;--ok:#4ade80;--ok-bg:#0f2a19;--bad:#f87171;--bad-bg:#2c1615; }
+  }
+  :root[data-theme="light"]{--ground:#eef1f4;--surface:#fff;--surface-2:#f6f8fa;--ink:#1a2028;--muted:#5c6774;--hair:#dde3ea;--accent:#4f46e5;--accent-bg:#ebeafc;--ok:#15803d;--ok-bg:#e6f5ec;--bad:#c0392b;--bad-bg:#fbe9e7;}
+  :root[data-theme="dark"]{--ground:#0e131a;--surface:#161d26;--surface-2:#1c2530;--ink:#e7edf3;--muted:#97a4b2;--hair:#26313d;--accent:#8f8bf5;--accent-bg:#1e1d38;--ok:#4ade80;--ok-bg:#0f2a19;--bad:#f87171;--bad-bg:#2c1615;}
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 30px 26px 34px; }
+  header { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 22px; justify-content: space-between; }
+  .eyebrow { font-family: var(--font-mono); font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  h1 { font-family: var(--font-mono); font-size: clamp(28px, 4.6vw, 42px); font-weight: 700; margin: 0; letter-spacing: -.01em; line-height: 1.08; text-wrap: balance; }
+  h1 .chev { color: var(--accent); }
+  .badge { font-family: var(--font-mono); font-size: 14px; color: var(--ok); border: 1.5px solid var(--ok); border-radius: 999px; padding: 5px 12px; white-space: nowrap; }
+  .rule { font-family: var(--font-mono); font-size: 17px; line-height: 1.5; background: var(--accent-bg); border: 1.5px solid var(--accent); border-radius: 12px; padding: 15px 17px; margin: 22px 0 20px; }
+  .rule b { color: var(--accent); }
+
+  .matrix { display: grid; grid-template-columns: 1fr 128px 128px; gap: 10px; align-items: stretch; }
+  .mh { font-family: var(--font-mono); font-weight: 700; font-size: 15px; text-align: center; padding: 10px 6px 4px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .mh.ha { color: var(--bad); } .mh.bk { color: var(--ok); }
+  .threat { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 15px 18px; font-size: 17px; font-weight: 600; }
+  .cell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 12px; border: 1px solid var(--hair); font-family: var(--font-mono); }
+  .cell .mark { font-size: 30px; line-height: 1; font-weight: 700; }
+  .cell .lbl { font-size: 12.5px; }
+  .yes { background: var(--ok-bg); color: var(--ok); border-color: color-mix(in srgb, var(--ok) 30%, transparent); }
+  .no  { background: var(--bad-bg); color: var(--bad); border-color: color-mix(in srgb, var(--bad) 30%, transparent); }
+
+  .foot-note { margin-top: 22px; font-family: var(--font-mono); font-size: 16px; line-height: 1.5; color: var(--ink); background: var(--surface-2); border: 1px solid var(--hair); border-radius: 12px; padding: 15px 17px; }
+  .foot-note b { color: var(--accent); }
+  .foot { margin-top: 14px; font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+  @media (max-width: 560px) { .matrix { grid-template-columns: 1fr 84px 84px; } .cell .lbl { display: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Homelab · serie 3 — backup / DR</p>
+      <h1><span class="chev">❯</span> HA no es backup: qué te salva de qué</h1>
+    </div>
+    <span class="badge">✓ sanitizado</span>
+  </header>
+
+  <p class="rule">Un <b>cluster</b> te protege de que se muera un nodo. De todo lo demás te salva un
+    <b>restore</b> — desde un backup off-box y probado.</p>
+
+  <div class="matrix">
+    <div></div>
+    <div class="mh ha">Cluster / HA</div>
+    <div class="mh bk">Backup off-box</div>
+
+    <div class="threat">Se muere un nodo (hardware)</div>
+    <div class="cell yes"><span class="mark">✓</span><span class="lbl">failover</span></div>
+    <div class="cell yes"><span class="mark">✓</span><span class="lbl">restore</span></div>
+
+    <div class="threat">Borrado por error (rm -rf, delete)</div>
+    <div class="cell no"><span class="mark">✕</span><span class="lbl">no ayuda</span></div>
+    <div class="cell yes"><span class="mark">✓</span><span class="lbl">restore</span></div>
+
+    <div class="threat">Update / cambio que rompe todo</div>
+    <div class="cell no"><span class="mark">✕</span><span class="lbl">no ayuda</span></div>
+    <div class="cell yes"><span class="mark">✓</span><span class="lbl">restore</span></div>
+
+    <div class="threat">Ransomware / corrupción</div>
+    <div class="cell no"><span class="mark">✕</span><span class="lbl">se replica</span></div>
+    <div class="cell yes"><span class="mark">✓</span><span class="lbl">off-box</span></div>
+
+    <div class="threat">Se quema el sitio entero</div>
+    <div class="cell no"><span class="mark">✕</span><span class="lbl">no ayuda</span></div>
+    <div class="cell yes"><span class="mark">✓</span><span class="lbl">off-site</span></div>
+  </div>
+
+  <p class="foot-note">🗄️ Por eso: <b>2 nodos standalone</b> + PBS en OTRO nodo (off-box) + <b>restores
+    probados</b>. La regla 3-2-1. Y ojo: un backup NO probado no es un backup.</p>
+  <p class="foot" id="foot">© Roman Fandrich · homelab · modelo de backup/DR (conceptual, sin datos sensibles)</p>
+</div>
