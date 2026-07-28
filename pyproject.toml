@@ -26,6 +26,7 @@ dev = [
 ]
 render = [
     "playwright>=1.40",      # render de diagramas HTML -> PNG (scripts/render-diagram.py)
+    "pillow>=10",            # compone el PNG sobre un lienzo del ratio target (feed de LinkedIn)
 ]
 
 [project.scripts]
