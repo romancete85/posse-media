@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     # Contexto de grounding (perfil, proyectos, fuentes)
     context_dir: str = "context"
     context_max_chars: int = 6000  # tope: en 14b CPU, más contexto = prompt más lento
+    # Few-shot: piezas publicadas como ejemplares de estilo + arco de serie (upstream del gate).
+    exemplars_n: int = 2            # cuántas piezas publicadas usar de ejemplo
+    exemplars_max_chars: int = 3500  # tope del bloque few-shot (CPU: más = más lento)
 
     # Generación con IA (upstream del gate; produce siempre drafts)
     # Backend de texto: "ollama" (homelab, gratis) | "claude" (API, con créditos)

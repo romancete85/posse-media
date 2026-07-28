@@ -8,7 +8,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from posse import content_store, context
+from posse import content_store, context, exemplars
 from posse.config import Settings, get_settings
 from posse.generators import llm
 from posse.models import DestinoPublicado, Estado, Pieza, Pilar
@@ -80,12 +80,18 @@ def draft(
     *,
     fecha: str | None = None,
     usar_contexto: bool = True,
+    usar_ejemplos: bool = True,
     settings: Settings | None = None,
     client=None,
 ) -> Pieza:
-    """Genera una pieza draft (no la escribe a disco)."""
+    """Genera una pieza draft (no la escribe a disco).
+
+    `usar_ejemplos`: suma tus piezas publicadas como few-shot de estilo + el arco de la serie.
+    """
     settings = settings or get_settings()
     system = context.con_contexto(_SYSTEM, settings) if usar_contexto else _SYSTEM
+    if usar_ejemplos:
+        system = exemplars.augment_system(system, settings, pilar=pilar)
     out = llm.generate_structured(
         f"Tema o nota: {tema}\n\nRedactá un post.",
         DraftOut,
@@ -97,9 +103,17 @@ def draft(
 
 
 def draft_to_file(
-    tema: str, pilar: str, *, usar_contexto: bool = True, settings: Settings | None = None, client=None
+    tema: str,
+    pilar: str,
+    *,
+    usar_contexto: bool = True,
+    usar_ejemplos: bool = True,
+    settings: Settings | None = None,
+    client=None,
 ) -> Path:
     """Genera y escribe la pieza draft en content/. Devuelve la ruta."""
     settings = settings or get_settings()
-    pieza = draft(tema, pilar, usar_contexto=usar_contexto, settings=settings, client=client)
+    pieza = draft(
+        tema, pilar, usar_contexto=usar_contexto, usar_ejemplos=usar_ejemplos, settings=settings, client=client
+    )
     return content_store.save_new(pieza, settings.content_dir)
