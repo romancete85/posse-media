@@ -1,7 +1,7 @@
 # Serie "Homelab" · pieza 2 — gobernanza (semáforo + ACL). Sanitizada (sin IPs/tokens/VMIDs).
 id: 2026-07-28-gobernanza-ia-semaforo
 pilar: A
-estado: approved
+estado: published
 programado: 2026-07-28   # auto-publish: el guest la publica el martes 09:00 ART
 destinos: [linkedin]
 titulo: 'Gobernanza: cómo dejo que una IA opere mi infra sin romper nada'
@@ -35,8 +35,12 @@ cuerpo: |
 
   👇 ¿Vos le confiarías operaciones a una IA? ¿Hasta qué color del semáforo llegarías?
 assets:
-  - path: content/assets/diagrama-gobernanza.png
-    alt: "Semáforo de gobernanza: VERDE (read-only, auto-aprobable), AMARILLO (reversible, solo en el pool sandbox), ROJO (destructivo, gate humano + backup verificado). Barrera dura = ACL de Proxmox; la IA no se auto-otorga permisos."
+- path: content/assets/diagrama-gobernanza.png
+  alt: "Semáforo de gobernanza: VERDE (read-only, auto-aprobable), AMARILLO (reversible,
+    solo en el pool sandbox), ROJO (destructivo, gate humano + backup verificado).
+    Barrera dura = ACL de Proxmox; la IA no se auto-otorga permisos."
 hashtags: [Proxmox, CloudSecurity, DevOps, IA, Homelab]
 publicado:
-  linkedin: { fecha: null, url: null, post_id: null }
+  linkedin: {fecha: '2026-07-28T12:00:06.498029+00:00', url: 
+      https://www.linkedin.com/feed/update/urn:li:share:7487839298348810242, 
+      post_id: urn:li:share:7487839298348810242}
