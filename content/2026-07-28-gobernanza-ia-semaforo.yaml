@@ -41,6 +41,13 @@ assets:
     Barrera dura = ACL de Proxmox; la IA no se auto-otorga permisos."
 hashtags: [Proxmox, CloudSecurity, DevOps, IA, Homelab]
 publicado:
-  linkedin: {fecha: '2026-07-28T12:00:06.498029+00:00', url:
-      https://www.linkedin.com/feed/update/urn:li:share:7487839298348810242,
+  linkedin: {fecha: '2026-07-28T12:00:06.498029+00:00', url: 
+      https://www.linkedin.com/feed/update/urn:li:share:7487839298348810242, 
       post_id: urn:li:share:7487839298348810242}
+metricas:
+  linkedin:
+    fecha: '2026-08-01'
+    impresiones: 170
+    reacciones: 3
+    comentarios: 3
+    seguidores: 0
