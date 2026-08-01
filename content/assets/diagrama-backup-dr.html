@@ -28,7 +28,8 @@
   .matrix { display: grid; grid-template-columns: 1fr 128px 128px; gap: 10px; align-items: stretch; }
   .mh { font-family: var(--font-mono); font-weight: 700; font-size: 15px; text-align: center; padding: 10px 6px 4px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
   .mh.ha { color: var(--bad); } .mh.bk { color: var(--ok); }
-  .threat { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 15px 18px; font-size: 17px; font-weight: 600; }
+  .threat { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--hair); border-radius: 12px; padding: 15px 18px; font-size: 17px; font-weight: 600; cursor: pointer; transition: border-color .15s; }
+  .threat:hover, .threat:focus-visible { border-color: var(--accent); outline: none; }
   .cell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 12px; border: 1px solid var(--hair); font-family: var(--font-mono); }
   .cell .mark { font-size: 30px; line-height: 1; font-weight: 700; }
   .cell .lbl { font-size: 12.5px; }
@@ -37,7 +38,11 @@
 
   .foot-note { margin-top: 22px; font-family: var(--font-mono); font-size: 16px; line-height: 1.5; color: var(--ink); background: var(--surface-2); border: 1px solid var(--hair); border-radius: 12px; padding: 15px 17px; }
   .foot-note b { color: var(--accent); }
-  .foot { margin-top: 14px; font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+  .brand { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 20px;
+    font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+  .brand .chev { color: var(--accent); font-weight: 700; }
+  .brand b { color: var(--ink); font-weight: 600; letter-spacing: .01em; }
+  .foot { margin-top: 12px; font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
   @media (max-width: 560px) { .matrix { grid-template-columns: 1fr 84px 84px; } .cell .lbl { display: none; } }
 </style>
 
@@ -58,28 +63,49 @@
     <div class="mh ha">Cluster / HA</div>
     <div class="mh bk">Backup off-box</div>
 
-    <div class="threat">Se muere un nodo (hardware)</div>
+    <div class="threat" data-id="nodo" tabindex="0">Se muere un nodo (hardware)</div>
     <div class="cell yes"><span class="mark">✓</span><span class="lbl">failover</span></div>
     <div class="cell yes"><span class="mark">✓</span><span class="lbl">restore</span></div>
 
-    <div class="threat">Borrado por error (rm -rf, delete)</div>
+    <div class="threat" data-id="borrado" tabindex="0">Borrado por error (rm -rf, delete)</div>
     <div class="cell no"><span class="mark">✕</span><span class="lbl">no ayuda</span></div>
     <div class="cell yes"><span class="mark">✓</span><span class="lbl">restore</span></div>
 
-    <div class="threat">Update / cambio que rompe todo</div>
+    <div class="threat" data-id="update" tabindex="0">Update / cambio que rompe todo</div>
     <div class="cell no"><span class="mark">✕</span><span class="lbl">no ayuda</span></div>
     <div class="cell yes"><span class="mark">✓</span><span class="lbl">restore</span></div>
 
-    <div class="threat">Ransomware / corrupción</div>
+    <div class="threat" data-id="ransom" tabindex="0">Ransomware / corrupción</div>
     <div class="cell no"><span class="mark">✕</span><span class="lbl">se replica</span></div>
     <div class="cell yes"><span class="mark">✓</span><span class="lbl">off-box</span></div>
 
-    <div class="threat">Se quema el sitio entero</div>
+    <div class="threat" data-id="incendio" tabindex="0">Se quema el sitio entero</div>
     <div class="cell no"><span class="mark">✕</span><span class="lbl">no ayuda</span></div>
     <div class="cell yes"><span class="mark">✓</span><span class="lbl">off-site</span></div>
   </div>
 
   <p class="foot-note">🗄️ Por eso: <b>2 nodos standalone</b> + PBS en OTRO nodo (off-box) + <b>restores
     probados</b>. La regla 3-2-1. Y ojo: un backup NO probado no es un backup.</p>
-  <p class="foot" id="foot">© Roman Fandrich · homelab · modelo de backup/DR (conceptual, sin datos sensibles)</p>
+  <div class="brand"><span class="chev">❯</span> <b>Roman Fandrich</b> · homelab</div>
+  <p class="foot" id="foot">Tocá cada amenaza para ver por qué · modelo de backup/DR (sin datos sensibles)</p>
 </div>
+
+<script>
+  const DATA = {
+    nodo: "Se muere un nodo: el cluster hace failover a otro (HA). El backup también sirve: restaurás en otro nodo. Es el único caso donde HA ayuda.",
+    borrado: "rm -rf o un delete de más: el otro nodo del cluster tiene… lo mismo, ya borrado. HA no ayuda. El restore desde el backup, sí.",
+    update: "Un update o cambio que rompe todo: se propaga; el cluster no te devuelve el estado anterior. El backup (o un snapshot previo), sí.",
+    ransom: "Ransomware / corrupción: se replica al nodo par. Por eso el backup tiene que ser OFF-BOX (y mejor, retenido/inmutable), nunca en la misma caja.",
+    incendio: "Se quema el sitio entero: los dos nodos se van juntos. Solo te salva un backup OFF-SITE. Es el corazón de la regla 3-2-1.",
+  };
+  const foot = document.getElementById('foot');
+  const base = foot ? foot.textContent : '';
+  document.querySelectorAll('.threat[data-id]').forEach(el => {
+    const id = el.getAttribute('data-id');
+    const show = () => { if (DATA[id]) foot.textContent = DATA[id]; };
+    el.addEventListener('mouseenter', show);
+    el.addEventListener('mouseleave', () => { foot.textContent = base; });
+    el.addEventListener('click', show);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(); } });
+  });
+</script>

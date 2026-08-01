@@ -53,8 +53,13 @@
   .foot-note { margin-top: 22px; font-family: var(--font-mono); font-size: 16px; line-height: 1.5; color: var(--ink);
     background: var(--surface-2); border: 1px solid var(--hair); border-radius: 12px; padding: 15px 17px; }
   .foot-note b { color: var(--bad); }
-  /* .foot = panel interactivo; el render lo oculta (CAPTURE_CSS). */
-  .foot { margin-top: 16px; font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+  /* .brand = firma SIEMPRE visible (sale en el PNG). Es la marca personal en cada diagrama. */
+  .brand { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 20px;
+    font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+  .brand .chev { color: var(--accent); font-weight: 700; }
+  .brand b { color: var(--ink); font-weight: 600; letter-spacing: .01em; }
+  /* .foot = panel interactivo; el render lo OCULTA (CAPTURE_CSS). No poner la marca acá. */
+  .foot { margin-top: 12px; font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
 </style>
 
 <div class="wrap">
@@ -73,7 +78,8 @@
   </div>
 
   <p class="foot-note">🔒 Nota dura / regla de oro al pie.</p>
-  <p class="foot" id="foot">© Roman Fandrich · homelab · diagrama conceptual (sin datos sensibles)</p>
+  <div class="brand"><span class="chev">❯</span> <b>Roman Fandrich</b> · homelab</div>
+  <p class="foot" id="foot">Detalle interactivo (tocá los bloques) · sin datos sensibles</p>
 </div>
 
 <script>
