@@ -98,6 +98,11 @@ depender de claude.ai ni del partner API, y sin abrir puertos (contenido estáti
 El **contenido** (`site/public/`) es de este repo; el **túnel/DNS** lo cablea el operador (red/host). Ver `site/DEPLOY.md`.
 
 ### Futuro (diseñado, no comprometido)
+- **Clasificados — POSSE para avisos (proyecto aparte)** — automatizar publicación/rotación de **inmuebles**
+  (proyecto "sitios prop") + **productos** en Argentina/LATAM. Investigado 2026-08-02: **MercadoLibre API**
+  es el ancla (oficial, self-serve, individuos, sirve productos e inmuebles); portales inmob.
+  (Zonaprop/Argenprop/Properati) = **fase 2** vía CRM (Tokko) o feed Proppit; **Facebook FUERA** del flujo
+  automático (sin API legal; bots = ban). Reusa el ADN de este pipeline. **Detalle + fuentes: `docs/FUTURO-CLASIFICADOS.md`**.
 - **Difusión local (GATEADO)** — Stable Diffusion / ComfyUI como servicio del homelab para generar
   imágenes gratis (mismo patrón HTTP que Ollama). Es un **proyecto aparte**, lo arranca el operador con
   `proxmox-ai-ops`. Acá entraría como un `generate_fn` alternativo en `generators/images.py`.
