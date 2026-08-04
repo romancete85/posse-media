@@ -1,7 +1,7 @@
 # Serie "Homelab" · pieza 3 — backup/DR off-box. Sanitizada (sin IPs/VMIDs/endpoints).
 id: 2026-08-04-ha-no-es-backup
 pilar: A
-estado: approved
+estado: published
 programado: 2026-08-04   # auto-publish: el guest la publica el martes 09:00 ART
 destinos: [linkedin]
 titulo: 'HA no es backup: por qué NO clustericé mi homelab'
@@ -24,8 +24,13 @@ cuerpo: |
 
   👇 ¿Tenés backups… o tenés backups PROBADOS? ¿Cuándo fue tu último restore de prueba?
 assets:
-  - path: content/assets/diagrama-backup-dr.png
-    alt: "Matriz HA vs Backup: un cluster/HA solo salva de que se muera un nodo; un backup off-box y probado salva también de borrado por error, updates que rompen, ransomware e incendio del sitio. Homelab: 2 nodos standalone + PBS off-box + restores probados (regla 3-2-1)."
+- path: content/assets/diagrama-backup-dr.png
+  alt: "Matriz HA vs Backup: un cluster/HA solo salva de que se muera un nodo; un
+    backup off-box y probado salva también de borrado por error, updates que rompen,
+    ransomware e incendio del sitio. Homelab: 2 nodos standalone + PBS off-box + restores
+    probados (regla 3-2-1)."
 hashtags: [Proxmox, DevOps, CloudSecurity, DisasterRecovery, Homelab]
 publicado:
-  linkedin: { fecha: null, url: null, post_id: null }
+  linkedin: {fecha: '2026-08-04T12:00:04.695029+00:00', url: 
+      https://www.linkedin.com/feed/update/urn:li:share:7490376006243999744, 
+      post_id: urn:li:share:7490376006243999744}
