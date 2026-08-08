@@ -1,0 +1,105 @@
+<title>IA local en el homelab — un modelo por tarea</title>
+<style>
+  :root {
+    --ground: #eef1f4; --surface: #ffffff; --surface-2: #f6f8fa;
+    --ink: #1a2028; --muted: #5c6774; --hair: #dde3ea; --accent: #4f46e5; --accent-bg: #ebeafc;
+    --ok: #15803d; --ok-bg: #e6f5ec;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ground:#0e131a;--surface:#161d26;--surface-2:#1c2530;--ink:#e7edf3;--muted:#97a4b2;--hair:#26313d;
+      --accent:#8f8bf5;--accent-bg:#1e1d38;--ok:#4ade80;--ok-bg:#0f2a19; }
+  }
+  :root[data-theme="light"]{--ground:#eef1f4;--surface:#fff;--surface-2:#f6f8fa;--ink:#1a2028;--muted:#5c6774;--hair:#dde3ea;--accent:#4f46e5;--accent-bg:#ebeafc;--ok:#15803d;--ok-bg:#e6f5ec;}
+  :root[data-theme="dark"]{--ground:#0e131a;--surface:#161d26;--surface-2:#1c2530;--ink:#e7edf3;--muted:#97a4b2;--hair:#26313d;--accent:#8f8bf5;--accent-bg:#1e1d38;--ok:#4ade80;--ok-bg:#0f2a19;}
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 30px 26px 34px; }
+  header { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 22px; justify-content: space-between; }
+  .eyebrow { font-family: var(--font-mono); font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  h1 { font-family: var(--font-mono); font-size: clamp(28px, 4.6vw, 42px); font-weight: 700; margin: 0; letter-spacing: -.01em; line-height: 1.08; text-wrap: balance; }
+  h1 .chev { color: var(--accent); }
+  .badge { font-family: var(--font-mono); font-size: 14px; color: var(--ok); border: 1.5px solid var(--ok); border-radius: 999px; padding: 5px 12px; white-space: nowrap; }
+  .rule { font-family: var(--font-mono); font-size: 17px; line-height: 1.5; background: var(--accent-bg); border: 1.5px solid var(--accent); border-radius: 12px; padding: 15px 17px; margin: 22px 0 20px; }
+  .rule b { color: var(--accent); }
+
+  .cards { display: grid; gap: 13px; }
+  .card { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 16px;
+    background: var(--surface); border: 1px solid var(--hair); border-radius: 14px; padding: 16px 20px;
+    cursor: pointer; transition: border-color .15s; }
+  .card:hover, .card:focus-visible { border-color: var(--accent); outline: none; }
+  .card .model { font-family: var(--font-mono); font-weight: 700; font-size: 18px; color: var(--accent); }
+  .card .task { font-size: 16.5px; color: var(--ink); }
+  .card .tag { grid-column: 2; grid-row: 1 / span 2; justify-self: end; font-family: var(--font-mono);
+    font-size: 13px; color: var(--muted); background: var(--surface-2); border: 1px solid var(--hair);
+    border-radius: 999px; padding: 5px 12px; white-space: nowrap; }
+
+  .foot-note { margin-top: 22px; font-family: var(--font-mono); font-size: 16px; line-height: 1.5; color: var(--ink); background: var(--surface-2); border: 1px solid var(--hair); border-radius: 12px; padding: 15px 17px; }
+  .foot-note b { color: var(--accent); }
+  .brand { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 20px; font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+  .brand .chev { color: var(--accent); font-weight: 700; }
+  .brand b { color: var(--ink); font-weight: 600; letter-spacing: .01em; }
+  .foot { margin-top: 12px; font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Homelab · serie 4 — IA local</p>
+      <h1><span class="chev">❯</span> IA en casa: un modelo por tarea</h1>
+    </div>
+    <span class="badge">✓ sanitizado</span>
+  </header>
+
+  <p class="rule">Varios modelos en un <b>mini-PC, sin GPU</b>, corriendo en un contenedor del homelab.
+    Cada uno para lo suyo. Gratis y privado.</p>
+
+  <div class="cards">
+    <div class="card" data-id="rapido" tabindex="0">
+      <span class="model">llama3.2:3b</span>
+      <span class="task">Borradores rápidos, tareas simples</span>
+      <span class="tag">liviano</span>
+    </div>
+    <div class="card" data-id="calidad" tabindex="0">
+      <span class="model">qwen2.5:14b</span>
+      <span class="task">Cuando importa la calidad del texto</span>
+      <span class="tag">lento en CPU</span>
+    </div>
+    <div class="card" data-id="rag" tabindex="0">
+      <span class="model">nomic-embed-text</span>
+      <span class="task">RAG: buscar en la doc de mis proyectos</span>
+      <span class="tag">embeddings</span>
+    </div>
+    <div class="card" data-id="vision" tabindex="0">
+      <span class="model">llava:7b</span>
+      <span class="task">Leer imágenes (alt-text de accesibilidad)</span>
+      <span class="tag">visión</span>
+    </div>
+  </div>
+
+  <p class="foot-note">🔌 El truco que más mueve la aguja: <b>keep_alive</b> mantiene el modelo caliente en
+    RAM (si no, pagás ~20s de recarga cada vez). En CPU es lento, pero no sale de casa y no hay factura.</p>
+  <div class="brand"><span class="chev">❯</span> <b>Roman Fandrich</b> · homelab</div>
+  <p class="foot" id="foot">Tocá cada modelo para ver el detalle · IA local (sin datos sensibles)</p>
+</div>
+
+<script>
+  const DATA = {
+    rapido: "llama3.2:3b — chico y veloz. Lo uso para borradores, clasificar, tareas simples donde no necesito el mejor texto. Arranca casi al toque.",
+    calidad: "qwen2.5:14b — el que mejor escribe de los que me entran. En CPU tarda minutos, así que lo reservo para cuando la calidad importa. keep_alive lo mantiene listo.",
+    rag: "nomic-embed-text — no genera texto: convierte mis documentos en vectores para RAG. Así la IA 'busca' en la doc de mis proyectos antes de responder.",
+    vision: "llava:7b — modelo de visión. Le paso una imagen y me devuelve una descripción; lo uso para el alt-text de accesibilidad de los diagramas.",
+  };
+  const foot = document.getElementById('foot');
+  const base = foot ? foot.textContent : '';
+  document.querySelectorAll('.card[data-id]').forEach(el => {
+    const id = el.getAttribute('data-id');
+    const show = () => { if (DATA[id]) foot.textContent = DATA[id]; };
+    el.addEventListener('mouseenter', show);
+    el.addEventListener('mouseleave', () => { foot.textContent = base; });
+    el.addEventListener('click', show);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(); } });
+  });
+</script>

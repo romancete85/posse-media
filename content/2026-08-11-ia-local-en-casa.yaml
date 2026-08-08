@@ -1,0 +1,32 @@
+# Serie "Homelab" · pieza 4 — IA local (Ollama). Sanitizada (sin IPs/VMIDs/endpoints).
+id: 2026-08-11-ia-local-en-casa
+pilar: A
+estado: draft
+destinos: [linkedin]
+titulo: 'IA local: cómo corro 4 modelos en un mini-PC de mi casa'
+cuerpo: |
+  Corro 4 modelos de IA en un mini-PC de mi casa. Sin GPU. Gratis. Te cuento cómo. 🧠
+
+  Viven en un contenedor liviano del homelab, y no uso uno para todo: uno por tarea.
+
+  🟢 llama3.2:3b → lo rápido (borradores, tareas simples).
+  🔵 qwen2.5:14b → cuando importa la calidad del texto.
+  🟣 nomic-embed-text → RAG: buscar en la doc de mis proyectos.
+  🟡 llava:7b → leer imágenes y escribir el alt-text.
+
+  El truco que más movió la aguja: keep_alive. Mantiene el modelo caliente en RAM; sin eso pagás ~20
+  segundos de recarga cada vez que lo llamás.
+
+  Ahora, la verdad incómoda: en CPU un modelo de 14b tarda minutos. Local no es más rápido ni más
+  inteligente que la nube.
+
+  ¿Entonces por qué? Gratis, sin rate limits, y —lo que más me importa como Cloud Security— los datos
+  no salen de casa. La misma IA que gobierno con semáforo corre acá, en mi living.
+
+  👇 ¿Vos correrías IA local, o la nube te resuelve? ¿Qué modelo estás usando?
+assets:
+  - path: content/assets/diagrama-ia-local.png
+    alt: "Modelos de IA local en el homelab, uno por tarea: llama3.2:3b (rápido), qwen2.5:14b (calidad de texto), nomic-embed-text (RAG/embeddings), llava:7b (visión, alt-text). Todo en un contenedor sin GPU; keep_alive los mantiene calientes en RAM. Gratis y privado."
+hashtags: [Ollama, Homelab, IA, SelfHosted, DevOps]
+publicado:
+  linkedin: { fecha: null, url: null, post_id: null }
