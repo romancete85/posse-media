@@ -1,0 +1,37 @@
+# Serie "Homelab operado por IA" · post ANCLA — el mapa del sistema. Sanitizado (sin IPs/VMIDs/endpoints).
+id: 2026-08-11-mapa-homelab-ia
+pilar: A
+estado: draft
+destinos: [linkedin]
+titulo: 'Un homelab operado por IA: el mapa de cómo se conecta todo'
+cuerpo: |
+  Vengo contando pedazos de mi homelab operado por IA: la gobernanza, el backup. Hoy va el mapa
+  completo. 🗺️
+
+  Arriba está el sistema entero. Las piezas:
+
+  🧠 El cerebro — Claude, en la nube. Planifica, decide y conecta todo: opera Proxmox por un token
+  MCP scopeado, y se enchufa con conectores (calendar, GitHub) y con n8n.
+
+  🔐 La IA local — Ollama, modelos en un guest sin GPU, para lo privado. Dos IAs, un sistema: una
+  decide, la otra guarda secretos.
+
+  🚦 La gobernanza — semáforo + ACL. El permiso lo da la ACL, no el prompt. Y lo destructivo siempre
+  pasa por mí.
+
+  🖥️ La infra — Proxmox, 2 nodos: producción (read-only para la IA) y sandbox (donde sí crea y rompe).
+
+  🗄️ Y la red de seguridad — backup off-box, probado.
+
+  El detalle que más me gusta: n8n orquesta los flujos… incluso el que publicó este mismo post. El
+  homelab se auto-opera y se auto-promociona.
+
+  De acá en más, cada post es un zoom a una parte de este mapa.
+
+  👇 ¿Qué abro primero: el cerebro (MCP), las dos IAs, o la orquestación?
+assets:
+  - path: content/assets/diagrama-mapa-sistema.png
+    alt: "Mapa de arquitectura del homelab operado por IA: arriba el gate humano; Claude (nube) como cerebro que planifica y conecta vía MCP + conectores; la gobernanza (semáforo + ACL) como barrera; Proxmox con 2 nodos (producción y sandbox); Ollama como IA local privada; n8n orquestando los flujos y el auto-publish; y backup/DR off-box como red de seguridad."
+hashtags: [Homelab, Proxmox, IA, MCP, DevOps]
+publicado:
+  linkedin: { fecha: null, url: null, post_id: null }

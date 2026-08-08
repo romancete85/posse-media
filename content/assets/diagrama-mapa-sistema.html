@@ -1,0 +1,183 @@
+<title>El mapa: un homelab operado por IA</title>
+<style>
+  :root {
+    --ground: #eef1f4; --surface: #ffffff; --surface-2: #f6f8fa;
+    --ink: #1a2028; --muted: #5c6774; --hair: #d3dae2; --accent: #4f46e5; --accent-bg: #ebeafc;
+    --green: #15803d; --amber: #d69e2e; --red: #c0392b; --ok: #15803d;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, monospace;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ground:#0e131a;--surface:#161d26;--surface-2:#1c2530;--ink:#e7edf3;--muted:#97a4b2;--hair:#2b3644;
+      --accent:#8f8bf5;--accent-bg:#1e1d38;--green:#4ade80;--amber:#f0b429;--red:#f87171;--ok:#4ade80; }
+  }
+  :root[data-theme="light"]{--ground:#eef1f4;--surface:#fff;--surface-2:#f6f8fa;--ink:#1a2028;--muted:#5c6774;--hair:#d3dae2;--accent:#4f46e5;--accent-bg:#ebeafc;--green:#15803d;--amber:#d69e2e;--red:#c0392b;--ok:#15803d;}
+  :root[data-theme="dark"]{--ground:#0e131a;--surface:#161d26;--surface-2:#1c2530;--ink:#e7edf3;--muted:#97a4b2;--hair:#2b3644;--accent:#8f8bf5;--accent-bg:#1e1d38;--green:#4ade80;--amber:#f0b429;--red:#f87171;--ok:#4ade80;}
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 30px 26px 34px; }
+  header { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 22px; justify-content: space-between; }
+  .eyebrow { font-family: var(--font-mono); font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  h1 { font-family: var(--font-mono); font-size: clamp(27px, 4.2vw, 40px); font-weight: 700; margin: 0; letter-spacing: -.01em; line-height: 1.08; text-wrap: balance; }
+  h1 .chev { color: var(--accent); }
+  .badge { font-family: var(--font-mono); font-size: 14px; color: var(--ok); border: 1.5px solid var(--ok); border-radius: 999px; padding: 5px 12px; white-space: nowrap; }
+  .map { margin: 22px 0 4px; }
+  .map svg { width: 100%; height: auto; display: block; }
+
+  /* estilos de los nodos SVG */
+  .node { fill: var(--surface); stroke: var(--hair); stroke-width: 1.5; }
+  .node.brain { fill: var(--accent-bg); stroke: var(--accent); stroke-width: 2.5; }
+  .node.gate { fill: var(--surface-2); stroke: var(--accent); stroke-width: 2; stroke-dasharray: 7 5; }
+  .sub { fill: var(--surface-2); stroke: var(--hair); stroke-width: 1; }
+  .ntitle { font: 700 25px var(--font-mono); fill: var(--ink); }
+  .nsub { font: 400 19px var(--font-sans); fill: var(--muted); }
+  .subt { font: 600 18px var(--font-mono); fill: var(--ink); }
+  .chip { fill: var(--surface); stroke: var(--accent); stroke-width: 1; }
+  .chipt { font: 600 15px var(--font-mono); fill: var(--accent); }
+  .link { stroke: var(--muted); stroke-width: 3; fill: none; }
+  .link.dash { stroke-dasharray: 6 6; }
+  .glyph { fill: none; stroke: var(--accent); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+  .glyph.fill { fill: var(--accent); stroke: none; }
+  .grp { cursor: pointer; }
+  .grp:hover .node, .grp:focus-visible .node { stroke: var(--accent); stroke-width: 3; outline: none; }
+  .tag { font: 600 15px var(--font-mono); }
+
+  .foot-note { margin-top: 20px; font-family: var(--font-mono); font-size: 16px; line-height: 1.5; color: var(--ink); background: var(--surface-2); border: 1px solid var(--hair); border-radius: 12px; padding: 15px 17px; }
+  .foot-note b { color: var(--accent); }
+  .brand { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 18px; font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+  .brand .chev { color: var(--accent); font-weight: 700; }
+  .brand b { color: var(--ink); font-weight: 600; }
+  .foot { margin-top: 12px; font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Homelab · serie — el mapa</p>
+      <h1><span class="chev">❯</span> Un homelab operado por IA: cómo se conecta todo</h1>
+    </div>
+    <span class="badge">✓ sanitizado</span>
+  </header>
+
+  <div class="map">
+    <svg viewBox="0 0 1000 900" role="img" aria-label="Arquitectura del homelab operado por IA">
+      <defs>
+        <marker id="arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/>
+        </marker>
+      </defs>
+
+      <!-- conectores (debajo de los nodos) -->
+      <path class="link" d="M500 120 L500 166" marker-end="url(#arw)"/>
+      <path class="link" d="M500 336 L500 378" marker-end="url(#arw)"/>
+      <path class="link" d="M500 472 L500 518" marker-end="url(#arw)"/>
+      <path class="link" d="M300 605 L280 605" marker-end="url(#arw)"/>
+      <path class="link" d="M700 605 L720 605" marker-end="url(#arw)"/>
+      <path class="link" d="M500 690 L500 748" marker-end="url(#arw)"/>
+
+      <!-- 1 · Gate humano -->
+      <g class="grp" data-id="gate" tabindex="0">
+        <rect class="node gate" x="350" y="24" width="300" height="96" rx="16"/>
+        <circle class="glyph" cx="398" cy="60" r="12"/>
+        <path class="glyph" d="M378 96 a20 20 0 0 1 40 0"/>
+        <text class="ntitle" x="432" y="60">Vos</text>
+        <text class="nsub" x="432" y="90">el gate humano</text>
+      </g>
+
+      <!-- 2 · Claude, el cerebro (nube) -->
+      <g class="grp" data-id="brain" tabindex="0">
+        <rect class="node brain" x="230" y="166" width="540" height="170" rx="18"/>
+        <path class="glyph" d="M300 236 a26 22 0 1 1 6 -42 a20 18 0 0 1 34 8 a18 16 0 0 1 2 34 z"/>
+        <path class="glyph fill" d="M322 210 l4 -14 l4 14 l14 4 l-14 4 l-4 14 l-4 -14 l-14 -4 z"/>
+        <text class="ntitle" x="366" y="212">Claude — el cerebro</text>
+        <text class="nsub" x="366" y="242">nube · planifica y decide</text>
+        <!-- chips: cómo conecta -->
+        <g>
+          <rect class="chip" x="252" y="284" width="150" height="34" rx="17"/><text class="chipt" x="327" y="306" text-anchor="middle">MCP · Proxmox</text>
+          <rect class="chip" x="414" y="284" width="120" height="34" rx="17"/><text class="chipt" x="474" y="306" text-anchor="middle">conectores</text>
+          <rect class="chip" x="546" y="284" width="90" height="34" rx="17"/><text class="chipt" x="591" y="306" text-anchor="middle">n8n</text>
+          <rect class="chip" x="648" y="284" width="100" height="34" rx="17"/><text class="chipt" x="698" y="306" text-anchor="middle">GitHub</text>
+        </g>
+      </g>
+
+      <!-- 3 · Gobernanza (barrera dura) -->
+      <g class="grp" data-id="gov" tabindex="0">
+        <rect class="node brain" x="120" y="380" width="760" height="92" rx="16"/>
+        <circle cx="170" cy="426" r="13" fill="var(--green)"/>
+        <circle cx="204" cy="426" r="13" fill="var(--amber)"/>
+        <circle cx="238" cy="426" r="13" fill="var(--red)"/>
+        <text class="ntitle" x="278" y="420">Gobernanza · semáforo + ACL</text>
+        <text class="nsub" x="278" y="450">el permiso lo da la ACL, no el prompt</text>
+      </g>
+
+      <!-- 4 · Proxmox (infra) -->
+      <g class="grp" data-id="prox" tabindex="0">
+        <rect class="node" x="300" y="520" width="400" height="170" rx="16"/>
+        <rect class="glyph" x="336" y="556" width="42" height="15" rx="4"/>
+        <rect class="glyph" x="336" y="578" width="42" height="15" rx="4"/>
+        <rect class="glyph" x="336" y="600" width="42" height="15" rx="4"/>
+        <text class="ntitle" x="398" y="560">Proxmox</text>
+        <text class="nsub" x="398" y="588">la infra · 2 nodos</text>
+        <rect class="sub" x="322" y="622" width="168" height="50" rx="10"/><text class="subt" x="406" y="653" text-anchor="middle">Nodo 1 · prod</text>
+        <rect class="sub" x="510" y="622" width="168" height="50" rx="10"/><text class="subt" x="594" y="653" text-anchor="middle">Nodo 2 · sandbox</text>
+      </g>
+
+      <!-- 4b · Ollama (IA local) -->
+      <g class="grp" data-id="ollama" tabindex="0">
+        <rect class="node" x="24" y="536" width="256" height="140" rx="16"/>
+        <path class="glyph" d="M52 592 l24 -22 l24 22 M58 588 v34 h36 v-34"/>
+        <text class="ntitle" x="112" y="588">Ollama</text>
+        <text class="nsub" x="112" y="616">IA local · privada</text>
+        <text class="tag" x="46" y="656" fill="var(--green)">🏠 no sale de casa</text>
+      </g>
+
+      <!-- 4c · n8n (orquestación) -->
+      <g class="grp" data-id="n8n" tabindex="0">
+        <rect class="node" x="720" y="536" width="256" height="140" rx="16"/>
+        <circle class="glyph fill" cx="756" cy="576" r="7"/><circle class="glyph fill" cx="792" cy="600" r="7"/><circle class="glyph fill" cx="756" cy="624" r="7"/>
+        <path class="glyph" d="M756 576 L792 600 L756 624"/>
+        <text class="ntitle" x="812" y="588">n8n</text>
+        <text class="nsub" x="812" y="616">orquestación</text>
+        <text class="tag" x="742" y="656" fill="var(--accent)">⚙️ flujos + auto-publish</text>
+      </g>
+
+      <!-- 5 · Backup off-box -->
+      <g class="grp" data-id="backup" tabindex="0">
+        <rect class="node" x="320" y="748" width="360" height="104" rx="16"/>
+        <ellipse class="glyph" cx="372" cy="784" rx="22" ry="8"/>
+        <path class="glyph" d="M350 784 v28 a22 8 0 0 0 44 0 v-28"/>
+        <text class="ntitle" x="418" y="788">Backup / DR</text>
+        <text class="nsub" x="418" y="818">off-box · la red de seguridad</text>
+      </g>
+    </svg>
+  </div>
+
+  <p class="foot-note">🧠 <b>Dos IAs, un sistema:</b> Claude (nube) es el <b>cerebro</b> que planifica y conecta
+    todo vía MCP; Ollama (local) hace lo <b>privado</b>. La gobernanza (semáforo + ACL) es la barrera dura;
+    el humano aprueba lo destructivo. Y n8n orquesta — incluso <b>este mismo posteo</b>.</p>
+  <div class="brand"><span class="chev">❯</span> <b>Roman Fandrich</b> · homelab</div>
+  <p class="foot" id="foot">Tocá cada bloque para ver su rol · arquitectura conceptual (sin datos sensibles)</p>
+</div>
+
+<script>
+  const DATA = {
+    gate: "Vos — el gate humano. Lo verde/amarillo corre gateado; lo ROJO (borrar, restaurar, wipe) SIEMPRE pide tu OK explícito + backup verificado. La IA nunca decide sola lo destructivo.",
+    brain: "Claude (en la nube) es el cerebro: planifica, decide y CONECTA. Opera Proxmox por un token MCP scopeado, y se integra con conectores (calendar, GitHub) y con n8n. Es el que orquesta.",
+    gov: "La barrera dura: cada operación se clasifica con un semáforo (verde/amarillo/rojo) y el permiso real lo da la ACL de Proxmox (rol + scope), NO el prompt. Un jailbreak no puede exceder la ACL.",
+    prox: "Proxmox: 2 nodos standalone (sin cluster). Nodo 1 = producción (read-only para la IA); Nodo 2 = sandbox donde la IA sí crea/rompe. Es el sustrato de todo.",
+    ollama: "Ollama corre modelos de IA LOCALES en un guest, sin GPU. Para lo privado/sensible: generación, RAG y visión. Los datos no salen de casa — decisión de seguridad.",
+    n8n: "n8n orquesta los flujos automáticos: monitoreo del cluster, avisos, y el auto-publish de esta misma serie de LinkedIn. El pegamento entre las partes.",
+    backup: "Backup/DR off-box: en OTRO nodo (PBS), probado con restores reales. Regla 3-2-1. Es la red de seguridad que hace que 'la IA opera mi infra' no dé miedo.",
+  };
+  const foot = document.getElementById('foot');
+  const base = foot ? foot.textContent : '';
+  document.querySelectorAll('.grp[data-id]').forEach(el => {
+    const id = el.getAttribute('data-id');
+    const show = () => { if (DATA[id]) foot.textContent = DATA[id]; };
+    el.addEventListener('mouseenter', show);
+    el.addEventListener('mouseleave', () => { foot.textContent = base; });
+    el.addEventListener('click', show);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(); } });
+  });
+</script>

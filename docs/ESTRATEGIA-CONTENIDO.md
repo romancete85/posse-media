@@ -53,13 +53,26 @@ Objetivo: **consistencia** para trabajar el algoritmo, ganar visualizaciones y c
 
 ## 7. Backlog de contenido (real, pilar A)
 
-**Serie Homelab (proxmox-ai-ops) — el ancla:**
-1. ✅ Arquitectura: "IA operativa con límites" *(publicado)*.
-2. **Gobernanza de la IA:** verde/amarillo/rojo, ACLs de Proxmox, el gate humano.
-3. **Backup / DR off-box:** por qué standalone + PBS, la decisión de no-cluster.
-4. **IA local:** Ollama en el homelab → generación/RAG gratis.
-5. **La red del homelab** (conceptual, sanitizado): segmentación, por qué un firewall dedicado.
-6. **"Errores que cometí armando el homelab"** (mentoría encubierta; engancha).
+**Serie "Homelab operado por IA" — el ancla (arco rediseñado 2026-08-08):**
+
+> **Spine:** *"Una IA opera mi homelab de verdad. Así está construido — pieza por pieza, sobre UN mapa."*
+> Cada post es un **zoom** a una parte del MAPA (post 2), no una faceta suelta. Tres hilos de coherencia:
+> (a) **el mapa** como referencia (todos dicen "estás acá"); (b) **las 2 capas de IA** — Claude/nube
+> (decide, orquesta, **conecta apps vía MCP + conectores**) + Ollama/local (privado, por seguridad);
+> (c) **el meta**: el sistema se auto-opera *y* se auto-promociona (esta serie sale sola por n8n).
+
+1. ✅ **Gancho** — "¿Quién dijo que es una locura…?" (arquitectura/intro). *(publicado)*
+2. 🔜 **EL MAPA** — "Cómo se conecta todo": el sistema entero conectado. **Post ancla.**
+3. **El cerebro** — Claude vía **MCP + conectores**: planifica, decide, conecta apps. *(el diferenciador que faltaba)*
+4. ✅ **Gobernanza** — semáforo + ACL: cómo el cerebro no rompe nada. *(publicado)*
+5. **Dos IAs** — una decide (Claude/nube), la otra guarda secretos (Ollama/local, por privacidad). *(era "IA local", reencuadrada; draft)*
+6. **n8n** — la orquestación; y el meta: esta serie se publica sola.
+7. ✅ **Backup/DR** — "HA no es backup". *(publicado)*
+8. **La red** (conceptual) — segmentación, por qué un firewall dedicado. *(opcional)*
+9. **Cierre/meta** — el homelab que se promociona solo (POSSE, esta serie es la prueba).
+
+> **Diagramas de arquitectura:** HTML/SVG con **íconos de servicios**, dentro del pipeline (marca + PNG
+> para el feed + interactivo + self-hosted). Sobre el template `content/assets/_diagrama-base.html`.
 
 **Otros temas pilar A (proyectos/experiencia propia):**
 7. **Estructura real de un proyecto Terraform** (de `tpintegrador`): módulos + backend remoto (S3+lock).
