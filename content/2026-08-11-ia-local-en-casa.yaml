@@ -1,7 +1,8 @@
 # Serie "Homelab" · pieza 4 — IA local (Ollama). Sanitizada (sin IPs/VMIDs/endpoints).
 id: 2026-08-11-ia-local-en-casa
 pilar: A
-estado: draft
+estado: approved
+programado: 2026-08-11   # auto-publish: el guest la publica el martes 09:00 ART
 destinos: [linkedin]
 titulo: 'IA local: cómo corro 4 modelos en un mini-PC de mi casa'
 cuerpo: |
