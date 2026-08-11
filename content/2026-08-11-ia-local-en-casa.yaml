@@ -1,7 +1,7 @@
 # Serie "Homelab" · pieza 4 — IA local (Ollama). Sanitizada (sin IPs/VMIDs/endpoints).
 id: 2026-08-11-ia-local-en-casa
 pilar: A
-estado: approved
+estado: published
 programado: 2026-08-11   # auto-publish: el guest la publica el martes 09:00 ART
 destinos: [linkedin]
 titulo: 'IA local: cómo corro 4 modelos en un mini-PC de mi casa'
@@ -26,8 +26,13 @@ cuerpo: |
 
   👇 ¿Vos correrías IA local, o la nube te resuelve? ¿Qué modelo estás usando?
 assets:
-  - path: content/assets/diagrama-ia-local.png
-    alt: "Modelos de IA local en el homelab, uno por tarea: llama3.2:3b (rápido), qwen2.5:14b (calidad de texto), nomic-embed-text (RAG/embeddings), llava:7b (visión, alt-text). Todo en un contenedor sin GPU; keep_alive los mantiene calientes en RAM. Gratis y privado."
+- path: content/assets/diagrama-ia-local.png
+  alt: "Modelos de IA local en el homelab, uno por tarea: llama3.2:3b (rápido), qwen2.5:14b
+    (calidad de texto), nomic-embed-text (RAG/embeddings), llava:7b (visión, alt-text).
+    Todo en un contenedor sin GPU; keep_alive los mantiene calientes en RAM. Gratis
+    y privado."
 hashtags: [Ollama, Homelab, IA, SelfHosted, DevOps]
 publicado:
-  linkedin: { fecha: null, url: null, post_id: null }
+  linkedin: {fecha: '2026-08-11T12:00:05.089792+00:00', url: 
+      https://www.linkedin.com/feed/update/urn:li:share:7492912722766954498, 
+      post_id: urn:li:share:7492912722766954498}
