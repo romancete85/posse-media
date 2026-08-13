@@ -2,14 +2,18 @@
 
 ## Datos
 - **Nombre:** Roman Fandrich
-- **Headline:** Cloud Engineer · DevOps Engineer · SysAdmin
+- **Headline:** DevOps & Cloud Security Engineer · Construyo infraestructura operada por IA, con
+  gobernanza · Seguridad y automatización cloud a gran escala · AWS · Terraform · Kubernetes
 - **Ubicación:** Argentina · **LinkedIn:** linkedin.com/in/grf1985
 - **Idiomas:** Español (nativo), Inglés (full professional)
 
 ## Bio / posicionamiento
-+10 años como sysadmin, con base en **Cisco CCNA** y título en análisis de sistemas, hoy consolidado
-en **DevOps / Cloud**. Especialidad: automatización, **IaC**, **CI/CD**, multi-cloud (fuerte en **AWS**),
-**Kubernetes** y **seguridad/compliance en la nube**. Aprendizaje continuo (certificaciones cloud).
++10 años en infraestructura (de **sysadmin** a **DevOps/Cloud**), con base en **Cisco CCNA**. Especialidad:
+**seguridad cloud** (hardening/compliance), automatización, **IaC**, **CI/CD**, multi-cloud (fuerte en
+**AWS**), **Kubernetes** y arquitecturas resilientes (HA/DR) para entornos de **gran escala en LATAM**.
+**Diferenciador:** llevo la **IA a la operación de infraestructura, con gobernanza** — homelab operado
+por IA (Proxmox · MCP · Ollama local · n8n) bajo gate humano + ACLs. Intersección de **seguridad,
+automatización e IA aplicada a infra**. Aprendizaje continuo (FinOps, DevOps/SRE).
 Además, **músico** apasionado: sueño con integrar tecnología y música.
 
 ## Experiencia (resumen, más reciente primero)
