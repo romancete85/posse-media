@@ -34,3 +34,10 @@ publicado:
   linkedin: {fecha: '2026-08-04T12:00:04.695029+00:00', url: 
       https://www.linkedin.com/feed/update/urn:li:share:7490376006243999744, 
       post_id: urn:li:share:7490376006243999744}
+metricas:
+  linkedin:
+    fecha: '2026-08-14'
+    impresiones: 178
+    reacciones: 2
+    comentarios: 1
+    seguidores: 1
