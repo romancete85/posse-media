@@ -29,9 +29,9 @@ ZONES = [
 
 # ── nodos ────────────────────────────────────────────────────────────────────
 NODES = [
-    N(id="gate", x=430, y=26, w=240, h=82, cls="node gate", title="Vos", groups="core",
+    N(id="gate", x=430, y=26, w=240, h=82, cls="node gate", title="Yo", groups="core",
       subs=[("el gate humano", MU)], links=["c1"],
-      detail="Vos, el gate humano. Lo ROJO (borrar/restaurar/wipe) SIEMPRE pide tu OK + backup verificado. La IA nunca decide sola lo destructivo."),
+      detail="Yo, el gate humano. Lo ROJO (borrar/restaurar/wipe) SIEMPRE pide mi OK + backup verificado. La IA nunca decide sola lo destructivo."),
     N(id="brain", x=225, y=150, w=650, h=150, cls="node brain", logo="anthropic", lcolor="#d97757",
       title="Claude — el cerebro", tcolor=CL, groups="core ia", subs=[("nube · planifica, decide y conecta", MU)],
       links=["c1", "c2"],
