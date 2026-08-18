@@ -1,7 +1,7 @@
 # Serie "Homelab operado por IA" · post ANCLA — el mapa del sistema. Sanitizado (sin IPs/VMIDs/endpoints).
 id: 2026-08-18-mapa-homelab-ia
 pilar: A
-estado: approved
+estado: published
 programado: 2026-08-18   # auto-publish vía el guest (pipeline)
 destinos: [linkedin]
 titulo: 'El sistema completo: una IA opera mi infraestructura, con gobernanza'
@@ -31,8 +31,14 @@ cuerpo: |
 
   👇 ¿Overkill para una casa, o así se va a operar la infra en 5 años?
 assets:
-  - path: content/assets/diagrama-mapa-sistema.png
-    alt: "Mapa de arquitectura del homelab operado por IA: el gate humano; Claude (nube) como cerebro que opera Proxmox vía MCP; Ollama como IA local privada; la gobernanza (semáforo + ACL); Proxmox con sus guests (pfSense, Cloudflare Tunnel, PBS, n8n, Vaultwarden y el pipeline de publicación); backup/DR off-box; y el roadmap (GPU, 3er nodo, off-site por WireGuard)."
+- path: content/assets/diagrama-mapa-sistema.png
+  alt: "Mapa de arquitectura del homelab operado por IA: el gate humano; Claude (nube)
+    como cerebro que opera Proxmox vía MCP; Ollama como IA local privada; la gobernanza
+    (semáforo + ACL); Proxmox con sus guests (pfSense, Cloudflare Tunnel, PBS, n8n,
+    Vaultwarden y el pipeline de publicación); backup/DR off-box; y el roadmap (GPU,
+    3er nodo, off-site por WireGuard)."
 hashtags: [Homelab, IA, Proxmox, DevOps, CloudSecurity]
 publicado:
-  linkedin: { fecha: null, url: null, post_id: null }
+  linkedin: {fecha: '2026-08-18T12:44:44.110063+00:00', url: 
+      https://www.linkedin.com/feed/update/urn:li:share:7495460674337353728, 
+      post_id: urn:li:share:7495460674337353728}
