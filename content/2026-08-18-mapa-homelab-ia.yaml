@@ -2,36 +2,36 @@
 id: 2026-08-18-mapa-homelab-ia
 pilar: A
 estado: published
-programado: 2026-08-18   # auto-publish vía el guest (pipeline)
+programado: 2026-08-18   # republicación manual con imagen hand-drawn (posse publish)
 destinos: [linkedin]
 titulo: 'El sistema completo: una IA opera mi infraestructura, con gobernanza'
 cuerpo: |
-  La semana pasada mostré UNA pieza de mi homelab — cómo corro IA local en casa. Explotó: +33.000
-  personas y una charla técnica enorme. 🔥
+  Hace poco mostré UNA pieza de mi homelab — cómo corro IA local en casa. Explotó: +33.000 personas
+  y un debate técnico enorme. 🔥
 
-  Hoy va el sistema ENTERO. Porque eso no es un experimento suelto: es una IA operando mi
-  infraestructura, sola, con gobernanza. 🗺️
+  Me pidieron el panorama completo. Acá está: el sistema ENTERO. Porque no es un experimento suelto
+  — es una IA operando mi infraestructura, sola, con gobernanza. 🗺️
 
-  Cómo se conecta todo:
+  Cómo se conecta todo, de arriba a abajo:
 
-  🧠 Claude (nube) — el cerebro. Opera el cluster por la API de Proxmox con un token MCP scopeado:
-  read-only en producción, operator solo en el sandbox.
+  🧠 Claude (nube) — el cerebro. Planifica, decide y opera el cluster por la API de Proxmox con un
+  token MCP scopeado: read-only en producción, operator solo en el sandbox.
 
-  🔐 Ollama (local) — lo privado. Modelos Q4 con keep_alive: generación, RAG y visión. Nada sale de casa.
+  🔐 Ollama (local) — lo privado. Modelos Q4 con keep_alive para generación, RAG y visión. Nada sale de casa.
 
-  🚦 Gobernanza — cada operación se clasifica (verde/amarillo/rojo) y el permiso lo dan las ACLs de
-  Proxmox, no el prompt. Lo destructivo, siempre gateado.
+  🚦 Gobernanza — cada operación se clasifica (verde / amarillo / rojo) y el permiso lo dan las ACLs
+  de Proxmox, nunca el prompt. Lo destructivo, siempre con gate humano.
 
-  🖥️ Proxmox — 2 nodos, con todos sus guests: firewall (pfSense), túnel (Cloudflare), backup server
-  (PBS), n8n, secrets (Vaultwarden), y el pipeline que publica esta serie (este post incluido).
+  🖥️ Proxmox — 2 nodos y sus guests: firewall (pfSense), túnel (Cloudflare), backup server (PBS),
+  n8n, secrets (Vaultwarden) y el pipeline que publica esta misma serie (este post incluido).
 
-  🗄️ Backup/DR off-box, probado. Regla 3-2-1.
+  🗄️ Backup/DR off-box y probado. Regla 3-2-1, casera.
 
-  Es lo mismo que hago para clientes enterprise, a escala de homelab.
+  Es la misma arquitectura que armo para clientes enterprise, a escala de living.
 
-  👇 ¿Overkill para una casa, o así se va a operar la infra en 5 años?
+  👇 ¿Overkill para una casa… o así vamos a operar la infra en 5 años?
 assets:
-- path: content/assets/diagrama-mapa-sistema.png
+- path: content/assets/diagrama-mapa-sistema-hd.png
   alt: "Mapa de arquitectura del homelab operado por IA: el gate humano; Claude (nube)
     como cerebro que opera Proxmox vía MCP; Ollama como IA local privada; la gobernanza
     (semáforo + ACL); Proxmox con sus guests (pfSense, Cloudflare Tunnel, PBS, n8n,
@@ -39,6 +39,9 @@ assets:
     3er nodo, off-site por WireGuard)."
 hashtags: [Homelab, IA, Proxmox, DevOps, CloudSecurity]
 publicado:
-  linkedin: {fecha: '2026-08-18T12:44:44.110063+00:00', url: 
-      https://www.linkedin.com/feed/update/urn:li:share:7495460674337353728, 
-      post_id: urn:li:share:7495460674337353728}
+  linkedin:
+    fecha: '2026-08-18T15:12:09.002408+00:00'
+    url: https://www.linkedin.com/feed/update/urn:li:share:7495497772910153728
+    post_id: urn:li:share:7495497772910153728
+# nota: reemplaza al post anterior (urn:li:share:7495460674337353728), borrado y republicado
+#       el 2026-08-18 con la imagen hand-drawn de portada.
